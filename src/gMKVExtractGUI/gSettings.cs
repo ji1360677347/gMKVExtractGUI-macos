@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using gMKVToolNix.Log;
 using gMKVToolNix.Segments;
+using gMKVToolNix.Theming;
 
 namespace gMKVToolNix
 {
@@ -128,7 +129,25 @@ namespace gMKVToolNix
         public bool DarkMode
         {
             get { return _DarkMode; }
-            set { _DarkMode = value; }
+            set
+            {
+                _DarkMode = value;
+                // 保持新旧字段一致：勾选 Dark 时同步 ThemeMode；关闭时若当前为 Dark 则回退 Light
+                if (value) _ThemeMode = gMKVToolNix.Theming.ThemeMode.Dark;
+                else if (_ThemeMode == gMKVToolNix.Theming.ThemeMode.Dark) _ThemeMode = gMKVToolNix.Theming.ThemeMode.Light;
+            }
+        }
+
+        // 字段使用全限定枚举名，避开 "属性名 == 类型名" 引起的标识符解析歧义
+        private gMKVToolNix.Theming.ThemeMode _ThemeMode = gMKVToolNix.Theming.ThemeMode.Light;
+        public gMKVToolNix.Theming.ThemeMode ThemeMode
+        {
+            get { return _ThemeMode; }
+            set
+            {
+                _ThemeMode = value;
+                _DarkMode = (value == gMKVToolNix.Theming.ThemeMode.Dark);
+            }
         }
 
         private bool _DisableBomForTextFiles = false;
@@ -587,12 +606,32 @@ namespace gMKVToolNix
                             try
                             {
                                 _DarkMode = bool.Parse(line.Substring(line.IndexOf(":") + 1));
+                                // 仅当 ThemeMode 字段还未读到时，由 DarkMode 推导默认值
+                                if (_ThemeMode == gMKVToolNix.Theming.ThemeMode.Light && _DarkMode)
+                                {
+                                    _ThemeMode = gMKVToolNix.Theming.ThemeMode.Dark;
+                                }
                             }
                             catch (Exception ex)
                             {
                                 Debug.WriteLine(ex);
                                 gMKVLogger.Log(string.Format("Error reading DarkMode! {0}", ex.Message));
                                 _DarkMode = false; // Default to false on error
+                            }
+                        }
+                        else if (line.StartsWith("ThemeMode:"))
+                        {
+                            try
+                            {
+                                string raw = line.Substring(line.IndexOf(":") + 1).Trim();
+                                _ThemeMode = (gMKVToolNix.Theming.ThemeMode)Enum.Parse(typeof(gMKVToolNix.Theming.ThemeMode), raw, true);
+                                _DarkMode = (_ThemeMode == gMKVToolNix.Theming.ThemeMode.Dark);
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine(ex);
+                                gMKVLogger.Log(string.Format("Error reading ThemeMode! {0}", ex.Message));
+                                _ThemeMode = _DarkMode ? gMKVToolNix.Theming.ThemeMode.Dark : gMKVToolNix.Theming.ThemeMode.Light;
                             }
                         }
                         else if (line.StartsWith("DisableBomForTextFiles:"))
@@ -675,6 +714,7 @@ namespace gMKVToolNix
                 sw.WriteLine(string.Format("Overwrite Existing Files:{0}", _OverwriteExistingFiles));
                 sw.WriteLine(string.Format("Disable Tooltips:{0}", _DisableTooltips));
                 sw.WriteLine(string.Format("DarkMode:{0}", _DarkMode));
+                sw.WriteLine(string.Format("ThemeMode:{0}", _ThemeMode));
                 sw.WriteLine(string.Format("DisableBomForTextFiles:{0}", _DisableBomForTextFiles));
                 sw.WriteLine(string.Format("UseRawExtractionMode:{0}", _UseRawExtractionMode));
                 sw.WriteLine(string.Format("UseFullRawExtractionMode:{0}", _UseFullRawExtractionMode));

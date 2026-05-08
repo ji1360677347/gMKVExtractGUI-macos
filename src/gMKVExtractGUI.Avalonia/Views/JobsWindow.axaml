@@ -1,0 +1,99 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:gMKVToolNix.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="560"
+        x:Class="gMKVToolNix.UI.Views.JobsWindow"
+        x:DataType="vm:JobsWindowViewModel"
+        Title="作业 · gMKVExtractGUI"
+        Width="900" Height="560"
+        MinWidth="640" MinHeight="380"
+        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur,Mica,Blur,Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="PreferSystemChrome"
+        ExtendClientAreaTitleBarHeightHint="-1">
+
+  <Window.DataContext>
+    <vm:JobsWindowViewModel />
+  </Window.DataContext>
+
+  <Panel>
+    <ExperimentalAcrylicBorder IsHitTestVisible="False">
+      <ExperimentalAcrylicBorder.Material>
+        <ExperimentalAcrylicMaterial
+          BackgroundSource="Digger"
+          TintColor="#DCD0F0"
+          TintOpacity="0.55"
+          MaterialOpacity="0.65" />
+      </ExperimentalAcrylicBorder.Material>
+    </ExperimentalAcrylicBorder>
+
+    <Rectangle Fill="{StaticResource MacaronWindowBackground}" Opacity="0.35" IsHitTestVisible="False" />
+
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,12,0,12">
+        <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2">
+          <TextBlock Classes="h1" Text="作业队列" />
+          <TextBlock Classes="subtitle" Text="批量提取任务管理（队列持久化将在后续轮次完成）" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Classes="macaron mint" Content="开始全部"
+                  Command="{Binding RunAllCommand}" />
+          <Button Classes="macaron" Content="移除选中"
+                  Command="{Binding RemoveSelectedCommand}" />
+          <Button Classes="macaron" Content="清空"
+                  Command="{Binding ClearCommand}" />
+        </StackPanel>
+      </Grid>
+
+      <Border Grid.Row="1" Classes="glass" Padding="2">
+        <Grid>
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                      Spacing="8" IsVisible="{Binding IsEmpty}">
+            <TextBlock FontSize="40" Text="📋" HorizontalAlignment="Center" />
+            <TextBlock Classes="h2" HorizontalAlignment="Center"
+                       Text="队列空空如也" />
+            <TextBlock Classes="subtitle" HorizontalAlignment="Center"
+                       Text="在主窗口选好轨道后点「加入队列」即可" />
+          </StackPanel>
+
+          <ListBox ItemsSource="{Binding Jobs}"
+                   SelectedItem="{Binding SelectedJob}"
+                   IsVisible="{Binding HasJobs}"
+                   Background="Transparent" BorderThickness="0">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:JobItem">
+                <Grid ColumnDefinitions="Auto,*,Auto" Margin="6,4">
+                  <Border Grid.Column="0" Background="{Binding StateColor}"
+                          CornerRadius="6" Padding="6,2" Margin="0,0,8,0">
+                    <TextBlock Text="{Binding StateLabel}"
+                               Foreground="{StaticResource MacaronTextBrush}"
+                               FontSize="11" FontWeight="SemiBold" />
+                  </Border>
+                  <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="2">
+                    <TextBlock Text="{Binding Title}"
+                               Foreground="{StaticResource MacaronTextBrush}"
+                               FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Detail}"
+                               Foreground="{StaticResource MacaronTextSoftBrush}"
+                               FontSize="11" />
+                  </StackPanel>
+                  <TextBlock Grid.Column="2" Text="{Binding ProgressLabel}"
+                             VerticalAlignment="Center"
+                             Foreground="{StaticResource MacaronTextSoftBrush}" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </Border>
+
+      <TextBlock Grid.Row="2" Classes="subtitle"
+                 Text="{Binding StatusText}"
+                 Margin="0,8,0,0" />
+    </Grid>
+  </Panel>
+</Window>

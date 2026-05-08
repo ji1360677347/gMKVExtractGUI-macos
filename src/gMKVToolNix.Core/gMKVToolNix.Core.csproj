@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>gMKVToolNix</RootNamespace>
+    <AssemblyName>gMKVToolNix</AssemblyName>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <!-- 业务库为旧代码 (.NET 4.0 风格)：关闭 nullable / 隐式 usings，避免大量 warning -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- 大量旧代码不显式声明可空注解，降低警告等级避免淹没真实错误 -->
+    <NoWarn>CS0168;CS0219;CS0414;CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 共享原 .NET Framework 项目源码：不 fork，源文件唯一来源 -->
+    <Compile Include="..\gMKVToolNix\**\*.cs"
+             Exclude="..\gMKVToolNix\Properties\AssemblyInfo.cs;..\gMKVToolNix\bin\**\*.cs;..\gMKVToolNix\obj\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <!-- macOS/Linux 上 Registry 调用会抛 PlatformNotSupportedException;
+         代码内 PlatformExtensions.IsOnLinux 检查会避免实际进入 -->
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+  </ItemGroup>
+
+</Project>

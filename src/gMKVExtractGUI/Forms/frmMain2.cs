@@ -124,29 +124,38 @@ namespace gMKVToolNix.Forms
                 chkAppendOnDragAndDrop.Checked = _Settings.AppendOnDragAndDrop;
                 chkOverwriteExistingFiles.Checked = _Settings.OverwriteExistingFiles;
                 chkDisableTooltips.Checked = _Settings.DisableTooltips;
-                chkDarkMode.Checked = _Settings.DarkMode;
+                // 三态主题切换：Unchecked=Light，Checked=Dark，Indeterminate=Macaron
+                // CheckedChanged 在 Checked→Indeterminate 切换时不会触发（Checked 属性不变），
+                // 因此改用 CheckStateChanged 监听三态。
+                chkDarkMode.ThreeState = true;
+                chkDarkMode.CheckState = ThemeModeToCheckState(_Settings.ThemeMode);
+                chkDarkMode.CheckedChanged -= chkDarkMode_CheckedChanged;
+                chkDarkMode.CheckStateChanged -= chkDarkMode_CheckedChanged;
+                chkDarkMode.CheckStateChanged += chkDarkMode_CheckedChanged;
+                ThemeManager.CurrentMode = _Settings.ThemeMode;
+
+                // Macaron 模式下拖出区域时清除高亮
+                trvInputFiles.DragLeave += (s, ev) => ClearMacaronDropHighlight();
                 gMKVLogger.Log("Finished setting chapter type, output directory and job mode from settings!");
 
                 _FromConstructor = false;
 
-                ThemeManager.ApplyTheme(this, _Settings.DarkMode); // Apply theme on startup
-                // Hack for DarkMode checkbox
-                if (_Settings.DarkMode)
-                {
-                    chkDarkMode.BackColor = Color.FromArgb(55, 55, 55);
-                }
+                ThemeManager.ApplyTheme(this, _Settings.ThemeMode); // Apply theme on startup
+                ApplyDarkModeCheckboxHack();
 
+                bool useDarkNative = _Settings.ThemeMode == ThemeMode.Dark;
                 if (this.Handle != IntPtr.Zero) // Ensure handle is created
                 {
-                    NativeMethods.SetWindowThemeManaged(this.Handle, _Settings.DarkMode);
-                    NativeMethods.TrySetImmersiveDarkMode(this.Handle, _Settings.DarkMode);
+                    NativeMethods.SetWindowThemeManaged(this.Handle, useDarkNative);
+                    NativeMethods.TrySetImmersiveDarkMode(this.Handle, useDarkNative);
                 }
                 else
                 {
                     // If handle not created yet, do it in Load or Shown event
                     this.Shown += (s, ev) => {
-                        NativeMethods.SetWindowThemeManaged(this.Handle, _Settings.DarkMode);
-                        NativeMethods.TrySetImmersiveDarkMode(this.Handle, _Settings.DarkMode);
+                        bool dn = _Settings.ThemeMode == ThemeMode.Dark;
+                        NativeMethods.SetWindowThemeManaged(this.Handle, dn);
+                        NativeMethods.TrySetImmersiveDarkMode(this.Handle, dn);
                     };
                 }
 
@@ -789,6 +798,7 @@ namespace gMKVToolNix.Forms
         {
             try
             {
+                ClearMacaronDropHighlight();
                 // check if the drop data is actually a file or folder
                 if (e != null && e.Data != null && e.Data.GetDataPresent(DataFormats.FileDrop))
                 {
@@ -814,6 +824,7 @@ namespace gMKVToolNix.Forms
                     if (e.Data.GetDataPresent(DataFormats.FileDrop))
                     {
                         e.Effect = DragDropEffects.All;
+                        ShowMacaronDropHighlight();
                     }
                     else
                     {
@@ -3156,40 +3167,89 @@ namespace gMKVToolNix.Forms
 
         private void chkDarkMode_CheckedChanged(object sender, EventArgs e)
         {
-            if (!_FromConstructor) // To prevent triggering during initial load
+            if (_FromConstructor) return; // Prevent triggering during initial load
+
+            ThemeMode newMode = CheckStateToThemeMode(chkDarkMode.CheckState);
+            _Settings.ThemeMode = newMode;
+            _Settings.Save();
+            ThemeManager.CurrentMode = newMode;
+            ThemeManager.ApplyTheme(this, newMode);
+            ApplyDarkModeCheckboxHack();
+
+            bool useDarkNative = newMode == ThemeMode.Dark;
+            NativeMethods.SetWindowThemeManaged(this.Handle, useDarkNative);
+            NativeMethods.TrySetImmersiveDarkMode(this.Handle, useDarkNative);
+
+            // Apply theme to context menu (ApplyContextMenuTheme 内部会根据 CurrentMode 路由到 Macaron)
+            if (contextMenuStrip != null)
             {
-                _Settings.DarkMode = chkDarkMode.Checked;
-                _Settings.Save();
-                ThemeManager.ApplyTheme(this, _Settings.DarkMode); // Apply theme on toggle
+                ThemeManager.ApplyContextMenuTheme(contextMenuStrip, _Settings.DarkMode);
+            }
 
-                // Hack for DarkMode checkbox
-                if (_Settings.DarkMode)
+            // 同步打开的子窗体（它们的 UpdateTheme(bool) 会调用 ApplyTheme，
+            // 而 ApplyTheme 内部会按 ThemeManager.CurrentMode 路由）
+            foreach (Form openForm in Application.OpenForms)
+            {
+                if (openForm is frmLog logForm && openForm != this)
                 {
+                    logForm.UpdateTheme(_Settings.DarkMode);
+                }
+                else if (openForm is frmJobManager jobManagerForm && openForm != this)
+                {
+                    jobManagerForm.UpdateTheme(_Settings.DarkMode);
+                }
+            }
+        }
+
+        private static CheckState ThemeModeToCheckState(ThemeMode mode)
+        {
+            switch (mode)
+            {
+                case ThemeMode.Dark: return CheckState.Checked;
+                case ThemeMode.Macaron: return CheckState.Indeterminate;
+                default: return CheckState.Unchecked;
+            }
+        }
+
+        private static ThemeMode CheckStateToThemeMode(CheckState state)
+        {
+            switch (state)
+            {
+                case CheckState.Checked: return ThemeMode.Dark;
+                case CheckState.Indeterminate: return ThemeMode.Macaron;
+                default: return ThemeMode.Light;
+            }
+        }
+
+        private void ShowMacaronDropHighlight()
+        {
+            if (ThemeManager.CurrentMode == ThemeMode.Macaron)
+            {
+                MacaronTheme.ShowDropHighlight(grpInputFiles);
+            }
+        }
+
+        private void ClearMacaronDropHighlight()
+        {
+            MacaronTheme.HideDropHighlight(grpInputFiles);
+        }
+
+        private void ApplyDarkModeCheckboxHack()
+        {
+            // 不同主题下让 chkDarkMode 复选框背景与窗体协调
+            switch (_Settings.ThemeMode)
+            {
+                case ThemeMode.Dark:
                     chkDarkMode.BackColor = Color.FromArgb(55, 55, 55);
-                }
-
-                NativeMethods.SetWindowThemeManaged(this.Handle, _Settings.DarkMode);
-                NativeMethods.TrySetImmersiveDarkMode(this.Handle, _Settings.DarkMode);
-
-                // Apply theme to context menu
-                if (contextMenuStrip != null)
-                {
-                    ThemeManager.ApplyContextMenuTheme(contextMenuStrip, _Settings.DarkMode);
-                }
-
-                // New code to add: Iterate through open forms and update theme
-                foreach (Form openForm in Application.OpenForms)
-                {
-                    if (openForm is frmLog logForm && openForm != this)
-                    {
-                        logForm.UpdateTheme(_Settings.DarkMode);
-                    }
-                    else if (openForm is frmJobManager jobManagerForm && openForm != this)
-                    {
-                        jobManagerForm.UpdateTheme(_Settings.DarkMode);
-                    }
-                    // Add other forms here if they also need dynamic theming
-                }
+                    break;
+                case ThemeMode.Macaron:
+                    chkDarkMode.BackColor = Color.Transparent;
+                    chkDarkMode.ForeColor = MacaronTheme.Text;
+                    break;
+                default:
+                    chkDarkMode.BackColor = SystemColors.Control;
+                    chkDarkMode.ForeColor = SystemColors.ControlText;
+                    break;
             }
         }
 

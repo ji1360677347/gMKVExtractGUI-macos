@@ -13,3 +13,9 @@
 bin/** -text
 obj/** -text
 packages/** -text
+
+# macOS port — these must keep LF endings on disk
+*.sh text eol=lf
+*.py text eol=lf
+*.icns -text
+*.png -text

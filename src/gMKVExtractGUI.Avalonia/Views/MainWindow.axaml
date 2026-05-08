@@ -1,0 +1,263 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:gMKVToolNix.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="780"
+        x:Class="gMKVToolNix.UI.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="gMKVExtractGUI"
+        Width="1100" Height="780"
+        MinWidth="900" MinHeight="620"
+        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur,Mica,Blur,Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="PreferSystemChrome"
+        ExtendClientAreaTitleBarHeightHint="-1">
+
+  <Window.DataContext>
+    <vm:MainWindowViewModel />
+  </Window.DataContext>
+
+  <Panel>
+
+    <!-- 真毛玻璃 + 马卡龙 tint -->
+    <ExperimentalAcrylicBorder IsHitTestVisible="False">
+      <ExperimentalAcrylicBorder.Material>
+        <ExperimentalAcrylicMaterial
+          BackgroundSource="Digger"
+          TintColor="#FFE2EA"
+          TintOpacity="0.55"
+          MaterialOpacity="0.65" />
+      </ExperimentalAcrylicBorder.Material>
+    </ExperimentalAcrylicBorder>
+
+    <!-- 上层渐变 -->
+    <Rectangle Fill="{StaticResource MacaronWindowBackground}" Opacity="0.45" IsHitTestVisible="False" />
+
+    <Grid Margin="20" RowDefinitions="Auto,Auto,*,Auto,Auto">
+
+      <!-- 顶栏：标题 + 全局工具按钮 -->
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,12,0,12">
+        <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2">
+          <TextBlock Classes="h1" Text="gMKVExtractGUI" />
+          <TextBlock Classes="subtitle"
+                     Text="马卡龙版 · 拖入文件到任意位置即可加载" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Classes="macaron sky" Content="日志" Command="{Binding ShowLogCommand}" />
+          <Button Classes="macaron lavender" Content="作业" Command="{Binding ShowJobsCommand}" />
+          <Button Classes="macaron lemon" Content="设置" Command="{Binding ShowOptionsCommand}" />
+        </StackPanel>
+      </Grid>
+
+      <!-- MKVToolnix 路径栏 -->
+      <Border Grid.Row="1" Classes="glass" Margin="0,0,0,12" Padding="14,10">
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+          <TextBlock Grid.Column="0" Classes="h2"
+                     Text="MKVToolnix 路径"
+                     VerticalAlignment="Center" Margin="0,0,12,0" />
+          <TextBox Grid.Column="1" Classes="macaron"
+                   Text="{Binding MkvToolnixPath}"
+                   Watermark="（点击右侧自动探测，或浏览选择）"
+                   Margin="0,0,8,0" />
+          <Button Grid.Column="2" Classes="macaron sky" Content="浏览…"
+                  Command="{Binding BrowseMkvToolnixPathCommand}" Margin="0,0,8,0" />
+          <Button Grid.Column="3" Classes="macaron mint" Content="自动探测"
+                  Command="{Binding AutoDetectMkvToolnixCommand}" />
+        </Grid>
+      </Border>
+
+      <!-- 中部两列：输入文件 / 选中文件信息 -->
+      <Grid Grid.Row="2" ColumnDefinitions="2*,3*">
+
+        <!-- 左：输入文件 -->
+        <Border Grid.Column="0" Classes="glass" Margin="0,0,8,0">
+          <Grid RowDefinitions="Auto,Auto,*,Auto">
+            <TextBlock Grid.Row="0" Classes="h2" Text="输入文件" Margin="0,0,0,8" />
+
+            <!-- 选项 checkbox -->
+            <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="4" Margin="0,0,0,8">
+              <CheckBox Content="拖入时追加（不替换已有列表）"
+                        IsChecked="{Binding AppendOnDragAndDrop}"
+                        Foreground="{StaticResource MacaronTextBrush}" />
+              <CheckBox Content="覆盖已存在文件"
+                        IsChecked="{Binding OverwriteExistingFiles}"
+                        Foreground="{StaticResource MacaronTextBrush}" />
+              <CheckBox Content="禁用提示"
+                        IsChecked="{Binding DisableTooltips}"
+                        Foreground="{StaticResource MacaronTextBrush}" />
+            </StackPanel>
+
+            <!-- 拖入边框 + 文件列表 -->
+            <Border Grid.Row="2"
+                    Name="DropZone"
+                    Classes="drop-target"
+                    Classes.active="{Binding IsDragOver}"
+                    DragDrop.AllowDrop="True">
+              <Grid>
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding HasNoFiles}"
+                            Spacing="8">
+                  <TextBlock FontSize="40" Text="🍬" HorizontalAlignment="Center" />
+                  <TextBlock Classes="h2" HorizontalAlignment="Center"
+                             Text="拖入 MKV 文件到这里" />
+                  <TextBlock Classes="subtitle" HorizontalAlignment="Center"
+                             Text="或点击下方浏览" />
+                  <Button Classes="macaron lavender"
+                          Content="浏览…"
+                          HorizontalAlignment="Center"
+                          Margin="0,8,0,0"
+                          Command="{Binding BrowseInputCommand}" />
+                </StackPanel>
+
+                <ListBox ItemsSource="{Binding InputFiles}"
+                         SelectedItem="{Binding SelectedInputFile}"
+                         Background="Transparent"
+                         IsVisible="{Binding HasFiles}"
+                         BorderThickness="0">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:InputFileItem">
+                      <TextBlock Text="{Binding DisplayName}"
+                                 ToolTip.Tip="{Binding FullPath}"
+                                 Foreground="{StaticResource MacaronTextBrush}" />
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </Grid>
+            </Border>
+
+            <!-- 底部按钮 -->
+            <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8"
+                        HorizontalAlignment="Right" Margin="0,8,0,0">
+              <Button Classes="macaron" Content="选择…"
+                      Command="{Binding SelectTracksCommand}" />
+              <Button Classes="macaron lavender" Content="移除"
+                      Command="{Binding RemoveSelectedFileCommand}" />
+              <Button Classes="macaron sky" Content="清空"
+                      Command="{Binding ClearInputFilesCommand}" />
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- 右：选中文件信息（轨道列表） -->
+        <Border Grid.Column="1" Classes="glass" Margin="8,0,0,0">
+          <Grid RowDefinitions="Auto,*">
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+              <TextBlock Grid.Column="0" Classes="h2" Text="选中文件信息" />
+              <TextBlock Grid.Column="1" Classes="subtitle"
+                         Text="{Binding TracksSummary}"
+                         VerticalAlignment="Center" />
+            </Grid>
+            <Border Grid.Row="1" BorderBrush="{StaticResource MacaronBorderBrush}"
+                    BorderThickness="1" CornerRadius="8">
+              <ListBox ItemsSource="{Binding Tracks}"
+                       Background="Transparent"
+                       BorderThickness="0">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:TrackItem">
+                    <Grid ColumnDefinitions="Auto,Auto,*" Margin="4,2">
+                      <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" />
+                      <Border Grid.Column="1"
+                              Background="{Binding TypeColor}"
+                              CornerRadius="6"
+                              Padding="6,2" Margin="6,0,8,0">
+                        <TextBlock Text="{Binding TypeLabel}"
+                                   Foreground="{StaticResource MacaronTextBrush}"
+                                   FontSize="11" FontWeight="SemiBold" />
+                      </Border>
+                      <TextBlock Grid.Column="2" Text="{Binding Display}"
+                                 VerticalAlignment="Center"
+                                 Foreground="{StaticResource MacaronTextBrush}" />
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </Border>
+          </Grid>
+        </Border>
+      </Grid>
+
+      <!-- 输出路径栏 -->
+      <Border Grid.Row="3" Classes="glass" Margin="0,12,0,8" Padding="14,10">
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+          <TextBlock Grid.Column="0" Classes="h2" Text="输出"
+                     VerticalAlignment="Center" Margin="0,0,12,0" />
+          <TextBox Grid.Column="1" Classes="macaron"
+                   Text="{Binding OutputDirectory}"
+                   IsEnabled="{Binding !UseSourceDirectory}"
+                   Watermark="（使用源目录）" Margin="0,0,8,0" />
+          <CheckBox Grid.Column="2" Content="使用源"
+                    IsChecked="{Binding UseSourceDirectory}"
+                    Foreground="{StaticResource MacaronTextBrush}"
+                    VerticalAlignment="Center" Margin="0,0,8,0" />
+          <Button Grid.Column="3" Classes="macaron sky" Content="浏览"
+                  Command="{Binding BrowseOutputCommand}" />
+        </Grid>
+      </Border>
+
+      <!-- 操作栏 -->
+      <Border Grid.Row="4" Classes="glass" Padding="14,10">
+        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto">
+          <!-- 第一行：选项 -->
+          <CheckBox Grid.Row="0" Grid.Column="0" Content="完成弹窗"
+                    IsChecked="{Binding ShowPopup}"
+                    Foreground="{StaticResource MacaronTextBrush}"
+                    VerticalAlignment="Center" Margin="0,0,16,0" />
+
+          <TextBlock Grid.Row="0" Grid.Column="1" Text="章节："
+                     VerticalAlignment="Center" Margin="0,0,4,0"
+                     Foreground="{StaticResource MacaronTextBrush}" />
+          <ComboBox Grid.Row="0" Grid.Column="2"
+                    ItemsSource="{Binding ChapterTypes}"
+                    SelectedItem="{Binding SelectedChapterType}"
+                    MinWidth="80" Margin="0,0,16,0" />
+
+          <TextBlock Grid.Row="0" Grid.Column="3" Text="提取模式："
+                     VerticalAlignment="Center" Margin="0,0,4,0"
+                     Foreground="{StaticResource MacaronTextBrush}" />
+          <ComboBox Grid.Row="0" Grid.Column="4"
+                    ItemsSource="{Binding ExtractionModes}"
+                    SelectedItem="{Binding SelectedExtractionMode}"
+                    MinWidth="180" HorizontalAlignment="Left" />
+
+          <Button Grid.Row="0" Grid.Column="5" Classes="macaron lavender"
+                  Content="加入队列" Margin="8,0,0,0"
+                  Command="{Binding AddJobCommand}" />
+          <Button Grid.Row="0" Grid.Column="6" Classes="macaron mint"
+                  Content="提取 ▶" Margin="8,0,0,0"
+                  Command="{Binding ExtractCommand}"
+                  IsEnabled="{Binding !IsExtracting}" />
+          <StackPanel Grid.Row="0" Grid.Column="7" Orientation="Horizontal" Spacing="6" Margin="8,0,0,0">
+            <Button Classes="macaron" Content="中止"
+                    Command="{Binding AbortCommand}"
+                    IsEnabled="{Binding IsExtracting}" />
+            <Button Classes="macaron" Content="全部中止"
+                    Command="{Binding AbortAllCommand}"
+                    IsEnabled="{Binding IsExtracting}" />
+          </StackPanel>
+
+          <!-- 第二行：状态/进度 -->
+          <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="8"
+                ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+            <ProgressBar Grid.Column="0"
+                         Value="{Binding ProgressValue}"
+                         Minimum="0" Maximum="100"
+                         IsVisible="{Binding IsExtracting}"
+                         Height="10" Margin="0,0,12,0"
+                         Foreground="{StaticResource MacaronPinkBrush}" />
+            <TextBlock Grid.Column="0" Classes="subtitle"
+                       Text="{Binding StatusText}"
+                       IsVisible="{Binding !IsExtracting}"
+                       VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Classes="subtitle"
+                       Text="{Binding ProgressText}"
+                       IsVisible="{Binding IsExtracting}"
+                       VerticalAlignment="Center" />
+          </Grid>
+        </Grid>
+      </Border>
+    </Grid>
+  </Panel>
+</Window>

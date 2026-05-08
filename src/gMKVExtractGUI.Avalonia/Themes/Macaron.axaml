@@ -1,0 +1,145 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- 马卡龙糖果配色 + 毛玻璃风格资源字典 -->
+  <Styles.Resources>
+    <ResourceDictionary>
+      <!-- 渐变与底色 -->
+      <Color x:Key="MacaronCream">#FDF6F0</Color>
+      <Color x:Key="MacaronGradientTop">#FFE2EA</Color>     <!-- 樱花粉 -->
+      <Color x:Key="MacaronGradientMid">#E8DEF8</Color>     <!-- 薰衣草 -->
+      <Color x:Key="MacaronGradientBottom">#D4EEE2</Color>  <!-- 薄荷 -->
+
+      <!-- 强调色 -->
+      <Color x:Key="MacaronPink">#FFD1DC</Color>
+      <Color x:Key="MacaronMint">#C4E8D5</Color>
+      <Color x:Key="MacaronLavender">#DCD0F0</Color>
+      <Color x:Key="MacaronLemon">#FFF0C0</Color>
+      <Color x:Key="MacaronSky">#CDE4F4</Color>
+
+      <!-- 文字 / 边框 -->
+      <Color x:Key="MacaronText">#4A4A5A</Color>
+      <Color x:Key="MacaronTextSoft">#78788A</Color>
+      <Color x:Key="MacaronBorder">#DCC8DA</Color>
+      <Color x:Key="MacaronGlassFill">#BEFFFFFF</Color>     <!-- 半透明白磨砂 -->
+      <Color x:Key="MacaronGlassBorder">#8CFFFFFF</Color>
+      <Color x:Key="MacaronShadow">#1C6E5082</Color>
+
+      <SolidColorBrush x:Key="MacaronTextBrush" Color="{StaticResource MacaronText}" />
+      <SolidColorBrush x:Key="MacaronTextSoftBrush" Color="{StaticResource MacaronTextSoft}" />
+      <SolidColorBrush x:Key="MacaronGlassFillBrush" Color="{StaticResource MacaronGlassFill}" />
+      <SolidColorBrush x:Key="MacaronGlassBorderBrush" Color="{StaticResource MacaronGlassBorder}" />
+      <SolidColorBrush x:Key="MacaronPinkBrush" Color="{StaticResource MacaronPink}" />
+      <SolidColorBrush x:Key="MacaronMintBrush" Color="{StaticResource MacaronMint}" />
+      <SolidColorBrush x:Key="MacaronLavenderBrush" Color="{StaticResource MacaronLavender}" />
+      <SolidColorBrush x:Key="MacaronLemonBrush" Color="{StaticResource MacaronLemon}" />
+      <SolidColorBrush x:Key="MacaronSkyBrush" Color="{StaticResource MacaronSky}" />
+      <SolidColorBrush x:Key="MacaronBorderBrush" Color="{StaticResource MacaronBorder}" />
+
+      <!-- 主窗口顶部到底部三段渐变 -->
+      <LinearGradientBrush x:Key="MacaronWindowBackground" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0" Color="{StaticResource MacaronGradientTop}" />
+        <GradientStop Offset="0.5" Color="{StaticResource MacaronGradientMid}" />
+        <GradientStop Offset="1" Color="{StaticResource MacaronGradientBottom}" />
+      </LinearGradientBrush>
+
+      <CornerRadius x:Key="MacaronCardCornerRadius">12</CornerRadius>
+      <CornerRadius x:Key="MacaronButtonCornerRadius">10</CornerRadius>
+      <CornerRadius x:Key="MacaronInputCornerRadius">8</CornerRadius>
+      <Thickness x:Key="MacaronCardPadding">16</Thickness>
+    </ResourceDictionary>
+  </Styles.Resources>
+
+  <!-- 玻璃面板 -->
+  <Style Selector="Border.glass">
+    <Setter Property="Background" Value="{StaticResource MacaronGlassFillBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource MacaronGlassBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{StaticResource MacaronCardCornerRadius}" />
+    <Setter Property="Padding" Value="{StaticResource MacaronCardPadding}" />
+    <Setter Property="BoxShadow" Value="0 6 20 0 #1C6E5082" />
+  </Style>
+
+  <!-- 拖入区高亮（粉色虚线） -->
+  <Style Selector="Border.drop-target">
+    <Setter Property="BorderBrush" Value="{StaticResource MacaronPinkBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+    <Setter Property="CornerRadius" Value="{StaticResource MacaronCardCornerRadius}" />
+  </Style>
+  <Style Selector="Border.drop-target.active">
+    <Setter Property="BorderThickness" Value="3" />
+    <Setter Property="Background" Value="#A0FFD1DC" />
+  </Style>
+
+  <!-- 马卡龙按钮基础样式（圆角 + 粉色） -->
+  <Style Selector="Button.macaron">
+    <Setter Property="Background" Value="{StaticResource MacaronPinkBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource MacaronTextBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="{StaticResource MacaronButtonCornerRadius}" />
+    <Setter Property="Padding" Value="16,8" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+  <Style Selector="Button.macaron:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#FFB6C8" />
+    <Setter Property="TextBlock.Foreground" Value="{StaticResource MacaronTextBrush}" />
+  </Style>
+  <Style Selector="Button.macaron:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="#F0A4B8" />
+  </Style>
+
+  <Style Selector="Button.macaron.mint">
+    <Setter Property="Background" Value="{StaticResource MacaronMintBrush}" />
+  </Style>
+  <Style Selector="Button.macaron.mint:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#A8DAC0" />
+  </Style>
+  <Style Selector="Button.macaron.mint:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="#8AC8AB" />
+  </Style>
+
+  <Style Selector="Button.macaron.lavender">
+    <Setter Property="Background" Value="{StaticResource MacaronLavenderBrush}" />
+  </Style>
+  <Style Selector="Button.macaron.lavender:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#C8B8E4" />
+  </Style>
+
+  <Style Selector="Button.macaron.sky">
+    <Setter Property="Background" Value="{StaticResource MacaronSkyBrush}" />
+  </Style>
+  <Style Selector="Button.macaron.sky:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="#B5D6EE" />
+  </Style>
+
+  <Style Selector="Button.macaron.lemon">
+    <Setter Property="Background" Value="{StaticResource MacaronLemonBrush}" />
+  </Style>
+
+  <!-- 文本输入框 -->
+  <Style Selector="TextBox.macaron">
+    <Setter Property="Background" Value="#FCFCFE" />
+    <Setter Property="Foreground" Value="{StaticResource MacaronTextBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource MacaronBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{StaticResource MacaronInputCornerRadius}" />
+    <Setter Property="Padding" Value="10,6" />
+  </Style>
+
+  <Style Selector="TextBlock.h1">
+    <Setter Property="FontSize" Value="22" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{StaticResource MacaronTextBrush}" />
+  </Style>
+  <Style Selector="TextBlock.h2">
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{StaticResource MacaronTextBrush}" />
+  </Style>
+  <Style Selector="TextBlock.subtitle">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Foreground" Value="{StaticResource MacaronTextSoftBrush}" />
+  </Style>
+
+</Styles>

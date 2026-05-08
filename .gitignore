@@ -1,0 +1,40 @@
+# .NET 构建产物
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+*.pidb
+*.dll.config
+.vs/
+
+# 打包/发布产物
+dist/
+build/
+publish/
+*.app/
+*.dmg
+*.pkg
+
+# IDE / 编辑器
+.idea/
+.vscode/
+.claude/
+*.swp
+*.swo
+.DS_Store
+
+# 夜跑运行时（briefings/handoffs/logs 是过程产物，PLAN.md/PROGRESS.md 跟踪）
+.orchestration/logs/
+.orchestration/briefings/
+.orchestration/handoffs/
+.orchestration/STOP
+
+# .NET 用户配置
+appsettings.Development.json
+*.csproj.DotSettings.user
+
+# Python
+__pycache__/
+*.pyc
+.venv/

@@ -12,6 +12,10 @@ namespace gMKVToolNix.Theming
         private static readonly ToolStripRenderer LinuxDarkStatusStripRenderer = new LinuxDarkStatusStripProfessionalRenderer();
         private static Action<Control, bool> _applyNativeTheme = ApplyNativeThemeCore;
 
+        // 当前主题模式。由 Settings.ThemeMode 在启动时设置；
+        // 旧的 ApplyTheme(Control, bool) 调用根据此值决定是否走 Macaron 路径。
+        public static ThemeMode CurrentMode { get; set; } = ThemeMode.Light;
+
         // Define Light and Dark Colors
         // Basic Colors
         public static Color LightModeFormBackColor { get; set; } = SystemColors.Control;
@@ -48,6 +52,30 @@ namespace gMKVToolNix.Theming
 
         public static void ApplyTheme(Control control, bool darkMode)
         {
+            // Macaron 模式优先：旧 bool 调用点零改动地获得糖果主题
+            if (CurrentMode == ThemeMode.Macaron)
+            {
+                ApplyMacaronTheme(control);
+                return;
+            }
+            ApplyClassicTheme(control, darkMode);
+        }
+
+        public static void ApplyTheme(Control control, ThemeMode mode)
+        {
+            CurrentMode = mode;
+            if (mode == ThemeMode.Macaron)
+            {
+                ApplyMacaronTheme(control);
+            }
+            else
+            {
+                ApplyClassicTheme(control, mode == ThemeMode.Dark);
+            }
+        }
+
+        private static void ApplyClassicTheme(Control control, bool darkMode)
+        {
             Color formBackColor = darkMode ? DarkModeFormBackColor : LightModeFormBackColor;
             Color formForeColor = darkMode ? DarkModeFormForeColor : LightModeFormForeColor;
             Color containerBackColor = darkMode ? DarkModeContainerBackColor : LightModeContainerBackColor;
@@ -64,16 +92,22 @@ namespace gMKVToolNix.Theming
             {
                 control.BackColor = formBackColor;
                 control.ForeColor = formForeColor;
+                // 切回经典主题时卸下 Macaron 渐变绘制
+                if (control is Form formCtl)
+                {
+                    MacaronTheme.UnhookFormBackground(formCtl);
+                }
             }
             else if (control is GroupBox || control is Panel || control is TabControl || control is gGroupBox || control is gTableLayoutPanel)
             {
                 control.BackColor = containerBackColor;
                 control.ForeColor = containerForeColor; // This sets the default for child controls that inherit
 
-                if (control is GroupBox)
+                if (control is GroupBox gbox)
                 {
+                    MacaronTheme.UnhookGroupBox(gbox);
                     control.Paint -= groupBoxPaintEventHandler;
-                    
+
                     // Only for Dark mode, since in light mode it creates an issue
                     if (darkMode)
                     {
@@ -157,6 +191,14 @@ namespace gMKVToolNix.Theming
             }
             else if (control is Button btn)
             {
+                // 清除 Macaron 模式下设置的圆角 Region 与游标
+                if (btn.Region != null)
+                {
+                    btn.Region.Dispose();
+                    btn.Region = null;
+                }
+                btn.Cursor = Cursors.Default;
+
                 if (darkMode)
                 {
                     btn.FlatStyle = FlatStyle.Flat;
@@ -389,6 +431,183 @@ namespace gMKVToolNix.Theming
             }
         }
 
+        private static void ApplyMacaronTheme(Control control)
+        {
+            if (control == null) return;
+
+            // 显式禁用 immersive dark mode（避免标题栏依然是深色）
+            ApplyNativeTheme(control, false);
+
+            if (control is Form form)
+            {
+                form.BackColor = MacaronTheme.GradientMid;
+                form.ForeColor = MacaronTheme.Text;
+                MacaronTheme.HookFormBackground(form);
+            }
+            else if (control is GroupBox gb)
+            {
+                gb.BackColor = Color.Transparent;
+                gb.ForeColor = MacaronTheme.Text;
+                gb.Paint -= groupBoxPaintEventHandler; // 移除经典暗色绘制
+                MacaronTheme.HookGroupBox(gb);
+            }
+            else if (control is Panel || control is TabControl || control is gTableLayoutPanel)
+            {
+                control.BackColor = Color.Transparent;
+                control.ForeColor = MacaronTheme.Text;
+            }
+            else if (control is Button btn)
+            {
+                MacaronTheme.StyleButton(btn);
+            }
+            else if (control is CheckBox || control is RadioButton)
+            {
+                control.BackColor = Color.Transparent;
+                control.ForeColor = MacaronTheme.Text;
+            }
+            else if (control is TextBox tb)
+            {
+                tb.BackColor = MacaronTheme.InputBack;
+                tb.ForeColor = MacaronTheme.Text;
+                tb.BorderStyle = BorderStyle.FixedSingle;
+            }
+            else if (control is RichTextBox rtb)
+            {
+                rtb.BackColor = MacaronTheme.InputBack;
+                rtb.ForeColor = MacaronTheme.Text;
+                if (rtb is gRichTextBox grtb)
+                {
+                    grtb.DarkMode = false;
+                }
+                rtb.BorderStyle = BorderStyle.FixedSingle;
+                try
+                {
+                    rtb.SelectionBackColor = MacaronTheme.Pink;
+                    if (!PlatformExtensions.IsOnLinux)
+                    {
+                        rtb.SelectionColor = MacaronTheme.Text;
+                    }
+                }
+                catch (Exception ex) { Debug.WriteLine(ex); }
+            }
+            else if (control is ComboBox cb)
+            {
+                NativeMethods.SetWindowThemeForComboBoxManaged(control.Handle, false);
+                cb.BackColor = MacaronTheme.InputBack;
+                cb.ForeColor = MacaronTheme.Text;
+                cb.FlatStyle = FlatStyle.Flat;
+            }
+            else if (control is ListBox lb)
+            {
+                lb.BackColor = MacaronTheme.InputBack;
+                lb.ForeColor = MacaronTheme.Text;
+                lb.BorderStyle = BorderStyle.FixedSingle;
+            }
+            else if (control is TreeView tv)
+            {
+                tv.BackColor = MacaronTheme.InputBack;
+                tv.ForeColor = MacaronTheme.Text;
+                tv.BorderStyle = BorderStyle.FixedSingle;
+                tv.LineColor = MacaronTheme.Lavender;
+            }
+            else if (control is DataGridView dgv)
+            {
+                dgv.BackgroundColor = MacaronTheme.InputBack;
+                dgv.GridColor = MacaronTheme.InputBorder;
+                dgv.BorderStyle = BorderStyle.FixedSingle;
+                dgv.EnableHeadersVisualStyles = false;
+
+                dgv.DefaultCellStyle.BackColor = MacaronTheme.InputBack;
+                dgv.DefaultCellStyle.ForeColor = MacaronTheme.Text;
+                dgv.DefaultCellStyle.SelectionBackColor = MacaronTheme.Pink;
+                dgv.DefaultCellStyle.SelectionForeColor = MacaronTheme.Text;
+
+                dgv.ColumnHeadersDefaultCellStyle.BackColor = MacaronTheme.Lavender;
+                dgv.ColumnHeadersDefaultCellStyle.ForeColor = MacaronTheme.Text;
+                dgv.ColumnHeadersDefaultCellStyle.SelectionBackColor = MacaronTheme.Lavender;
+                dgv.ColumnHeadersDefaultCellStyle.SelectionForeColor = MacaronTheme.Text;
+                dgv.RowHeadersDefaultCellStyle.BackColor = MacaronTheme.Lavender;
+                dgv.RowHeadersDefaultCellStyle.ForeColor = MacaronTheme.Text;
+                dgv.RowHeadersDefaultCellStyle.SelectionBackColor = MacaronTheme.Lavender;
+                dgv.RowHeadersDefaultCellStyle.SelectionForeColor = MacaronTheme.Text;
+            }
+            else if (control is MenuStrip ms)
+            {
+                ms.BackColor = MacaronTheme.Cream;
+                ms.ForeColor = MacaronTheme.Text;
+                ms.RenderMode = ToolStripRenderMode.System;
+                foreach (ToolStripItem item in ms.Items)
+                {
+                    ApplyMacaronToolStripItem(item);
+                }
+            }
+            else if (control is ContextMenuStrip cms)
+            {
+                ApplyMacaronContextMenu(cms);
+            }
+            else if (control is StatusStrip ss)
+            {
+                ss.BackColor = MacaronTheme.Cream;
+                ss.ForeColor = MacaronTheme.Text;
+                ss.RenderMode = ToolStripRenderMode.System;
+                foreach (ToolStripItem item in ss.Items)
+                {
+                    ApplyMacaronToolStripItem(item);
+                }
+            }
+            else if (control is ToolStrip ts)
+            {
+                ts.BackColor = MacaronTheme.Cream;
+                ts.ForeColor = MacaronTheme.Text;
+                foreach (ToolStripItem item in ts.Items)
+                {
+                    ApplyMacaronToolStripItem(item);
+                }
+            }
+            else if (control is Label)
+            {
+                control.BackColor = Color.Transparent;
+                control.ForeColor = MacaronTheme.Text;
+            }
+            else if (control is ProgressBar pb)
+            {
+                pb.ForeColor = MacaronTheme.Pink;
+            }
+            else if (control.HasChildren)
+            {
+                control.BackColor = Color.Transparent;
+                control.ForeColor = MacaronTheme.Text;
+            }
+
+            foreach (Control childControl in control.Controls)
+            {
+                ApplyMacaronTheme(childControl);
+            }
+        }
+
+        private static void ApplyMacaronToolStripItem(ToolStripItem item)
+        {
+            item.BackColor = MacaronTheme.Cream;
+            item.ForeColor = MacaronTheme.Text;
+            if (item is ToolStripMenuItem menuItem && menuItem.HasDropDownItems)
+            {
+                ApplyMacaronContextMenu(menuItem.DropDown);
+            }
+        }
+
+        private static void ApplyMacaronContextMenu(ToolStripDropDown menu)
+        {
+            if (menu == null || menu.IsDisposed) return;
+            menu.RenderMode = ToolStripRenderMode.Professional;
+            menu.BackColor = MacaronTheme.Cream;
+            menu.ForeColor = MacaronTheme.Text;
+            foreach (ToolStripItem item in menu.Items)
+            {
+                ApplyMacaronToolStripItem(item);
+            }
+            menu.Invalidate();
+        }
+
         private static void ApplyNativeTheme(Control control, bool darkMode)
         {
             _applyNativeTheme(control, darkMode);
@@ -408,6 +627,11 @@ namespace gMKVToolNix.Theming
 
         public static void ApplyToolStripItemTheme(ToolStripItem item, bool darkMode)
         {
+            if (CurrentMode == ThemeMode.Macaron)
+            {
+                ApplyMacaronToolStripItem(item);
+                return;
+            }
             if (darkMode)
             {
                 item.BackColor = DarkModeMenuBackColor;
@@ -445,6 +669,12 @@ namespace gMKVToolNix.Theming
         {
             if (menu == null || menu.IsDisposed)
             {
+                return;
+            }
+
+            if (CurrentMode == ThemeMode.Macaron)
+            {
+                ApplyMacaronContextMenu(menu);
                 return;
             }
 

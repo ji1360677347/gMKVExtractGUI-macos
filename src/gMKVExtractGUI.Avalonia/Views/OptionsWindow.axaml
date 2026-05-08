@@ -1,0 +1,138 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:gMKVToolNix.UI.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="780" d:DesignHeight="640"
+        x:Class="gMKVToolNix.UI.Views.OptionsWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="设置 · gMKVExtractGUI"
+        Width="780" Height="640"
+        MinWidth="640" MinHeight="500"
+        WindowStartupLocation="CenterOwner"
+        Background="Transparent"
+        TransparencyLevelHint="AcrylicBlur,Mica,Blur,Transparent"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="PreferSystemChrome"
+        ExtendClientAreaTitleBarHeightHint="-1">
+
+  <Panel>
+    <ExperimentalAcrylicBorder IsHitTestVisible="False">
+      <ExperimentalAcrylicBorder.Material>
+        <ExperimentalAcrylicMaterial
+          BackgroundSource="Digger"
+          TintColor="#FFF0C0"
+          TintOpacity="0.55"
+          MaterialOpacity="0.65" />
+      </ExperimentalAcrylicBorder.Material>
+    </ExperimentalAcrylicBorder>
+
+    <Rectangle Fill="{StaticResource MacaronWindowBackground}" Opacity="0.35" IsHitTestVisible="False" />
+
+    <ScrollViewer>
+      <Grid Margin="20" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+
+        <StackPanel Grid.Row="0" Orientation="Vertical" Spacing="2" Margin="0,12,0,16">
+          <TextBlock Classes="h1" Text="设置" />
+          <TextBlock Classes="subtitle" Text="所有改动立即对主窗口生效；持久化将在后续轮次完成" />
+        </StackPanel>
+
+        <!-- MKVToolnix 路径 -->
+        <Border Grid.Row="1" Classes="glass" Margin="0,0,0,12">
+          <StackPanel Orientation="Vertical" Spacing="8">
+            <TextBlock Classes="h2" Text="MKVToolnix" />
+            <TextBox Classes="macaron"
+                     Text="{Binding MkvToolnixPath}"
+                     Watermark="（点击右侧自动探测，或浏览选择）" />
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+              <Button Classes="macaron sky" Content="浏览…"
+                      Command="{Binding BrowseMkvToolnixPathCommand}" />
+              <Button Classes="macaron mint" Content="自动探测"
+                      Command="{Binding AutoDetectMkvToolnixCommand}" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <!-- 文件名模板 -->
+        <Border Grid.Row="2" Classes="glass" Margin="0,0,0,12">
+          <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                ColumnDefinitions="120,*">
+            <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Classes="h2"
+                       Text="文件名模板" Margin="0,0,0,4" />
+            <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Classes="subtitle"
+                       Text="可用占位符：{FilenameNoExt}、{TrackNumber}、{Language}、{TrackName}、{CodecID}、{EffectiveDelay} 等"
+                       Margin="0,0,0,8" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="视频"
+                       VerticalAlignment="Center" Margin="0,2"
+                       Foreground="{StaticResource MacaronTextBrush}" />
+            <TextBox Grid.Row="2" Grid.Column="1" Classes="macaron"
+                     Text="{Binding VideoPattern}" Margin="0,2" />
+
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="音频"
+                       VerticalAlignment="Center" Margin="0,2"
+                       Foreground="{StaticResource MacaronTextBrush}" />
+            <TextBox Grid.Row="3" Grid.Column="1" Classes="macaron"
+                     Text="{Binding AudioPattern}" Margin="0,2" />
+
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="字幕"
+                       VerticalAlignment="Center" Margin="0,2"
+                       Foreground="{StaticResource MacaronTextBrush}" />
+            <TextBox Grid.Row="4" Grid.Column="1" Classes="macaron"
+                     Text="{Binding SubtitlePattern}" Margin="0,2" />
+
+            <TextBlock Grid.Row="5" Grid.Column="0" Text="章节"
+                       VerticalAlignment="Center" Margin="0,2"
+                       Foreground="{StaticResource MacaronTextBrush}" />
+            <TextBox Grid.Row="5" Grid.Column="1" Classes="macaron"
+                     Text="{Binding ChapterPattern}" Margin="0,2" />
+
+            <TextBlock Grid.Row="6" Grid.Column="0" Text="附件"
+                       VerticalAlignment="Center" Margin="0,2"
+                       Foreground="{StaticResource MacaronTextBrush}" />
+            <TextBox Grid.Row="6" Grid.Column="1" Classes="macaron"
+                     Text="{Binding AttachmentPattern}" Margin="0,2" />
+
+            <TextBlock Grid.Row="7" Grid.Column="0" Text="标签"
+                       VerticalAlignment="Center" Margin="0,2"
+                       Foreground="{StaticResource MacaronTextBrush}" />
+            <TextBox Grid.Row="7" Grid.Column="1" Classes="macaron"
+                     Text="{Binding TagsPattern}" Margin="0,2" />
+          </Grid>
+        </Border>
+
+        <!-- 提取选项 -->
+        <Border Grid.Row="3" Classes="glass" Margin="0,0,0,12">
+          <StackPanel Orientation="Vertical" Spacing="8">
+            <TextBlock Classes="h2" Text="提取选项" />
+            <CheckBox Content="文本字幕不写入 BOM"
+                      IsChecked="{Binding DisableBomForTextFiles}"
+                      Foreground="{StaticResource MacaronTextBrush}" />
+            <CheckBox Content="使用 Raw 模式（mkvextract --raw）"
+                      IsChecked="{Binding UseRawExtractionMode}"
+                      Foreground="{StaticResource MacaronTextBrush}" />
+            <CheckBox Content="使用 Full Raw 模式（mkvextract --fullraw）"
+                      IsChecked="{Binding UseFullRawExtractionMode}"
+                      Foreground="{StaticResource MacaronTextBrush}" />
+            <CheckBox Content="拖入时追加（不替换已有列表）"
+                      IsChecked="{Binding AppendOnDragAndDrop}"
+                      Foreground="{StaticResource MacaronTextBrush}" />
+            <CheckBox Content="覆盖已存在文件"
+                      IsChecked="{Binding OverwriteExistingFiles}"
+                      Foreground="{StaticResource MacaronTextBrush}" />
+            <CheckBox Content="提取完成后弹窗"
+                      IsChecked="{Binding ShowPopup}"
+                      Foreground="{StaticResource MacaronTextBrush}" />
+          </StackPanel>
+        </Border>
+
+        <!-- 关闭按钮 -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="8"
+                    HorizontalAlignment="Right" Margin="0,4,0,12">
+          <Button Classes="macaron mint" Content="完成"
+                  Click="OnCloseClick" />
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+  </Panel>
+</Window>
