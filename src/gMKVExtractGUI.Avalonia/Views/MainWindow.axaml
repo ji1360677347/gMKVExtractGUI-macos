@@ -68,16 +68,56 @@
         </Grid>
       </Border>
 
-      <!-- 中部两列：输入文件 / 选中文件信息 -->
-      <Grid Grid.Row="2" ColumnDefinitions="2*,3*">
-
-        <!-- 左：输入文件 -->
-        <Border Grid.Column="0" Classes="glass" Margin="0,0,8,0">
+      <!-- 输入文件树：官方式单区布局，轨道始终展开 -->
+      <Border Grid.Row="2" Classes="glass">
+          <Border.ContextMenu>
+            <ContextMenu>
+              <MenuItem Header="{Binding CheckAllTracksHeader}" Command="{Binding CheckAllTracksCommand}" />
+              <Separator />
+              <MenuItem Header="{Binding CheckVideoTracksHeader}">
+                <MenuItem Header="{Binding AllVideoTracksHeader}" Command="{Binding CheckVideoTracksCommand}" />
+              </MenuItem>
+              <MenuItem Header="{Binding CheckAudioTracksHeader}">
+                <MenuItem Header="{Binding AllAudioTracksHeader}" Command="{Binding CheckAudioTracksCommand}" />
+              </MenuItem>
+              <MenuItem Header="{Binding CheckSubtitleTracksHeader}">
+                <MenuItem Header="{Binding AllSubtitleTracksHeader}" Command="{Binding CheckSubtitleTracksCommand}" />
+              </MenuItem>
+              <MenuItem Header="{Binding CheckChapterTracksHeader}">
+                <MenuItem Header="{Binding AllChapterTracksHeader}" Command="{Binding CheckChapterTracksCommand}" />
+              </MenuItem>
+              <MenuItem Header="{Binding CheckAttachmentTracksHeader}">
+                <MenuItem Header="{Binding AllAttachmentTracksHeader}" Command="{Binding CheckAttachmentTracksCommand}" />
+              </MenuItem>
+              <Separator />
+              <MenuItem Header="{Binding UncheckAllTracksHeader}" Command="{Binding UncheckAllTracksCommand}" />
+              <Separator />
+              <MenuItem Header="{Binding UncheckVideoTracksHeader}">
+                <MenuItem Header="{Binding UncheckedVideoTracksHeader}" Command="{Binding UncheckVideoTracksCommand}" />
+              </MenuItem>
+              <MenuItem Header="{Binding UncheckAudioTracksHeader}">
+                <MenuItem Header="{Binding UncheckedAudioTracksHeader}" Command="{Binding UncheckAudioTracksCommand}" />
+              </MenuItem>
+              <MenuItem Header="{Binding UncheckSubtitleTracksHeader}">
+                <MenuItem Header="{Binding UncheckedSubtitleTracksHeader}" Command="{Binding UncheckSubtitleTracksCommand}" />
+              </MenuItem>
+              <MenuItem Header="{Binding UncheckChapterTracksHeader}">
+                <MenuItem Header="{Binding UncheckedChapterTracksHeader}" Command="{Binding UncheckChapterTracksCommand}" />
+              </MenuItem>
+              <MenuItem Header="{Binding UncheckAttachmentTracksHeader}">
+                <MenuItem Header="{Binding UncheckedAttachmentTracksHeader}" Command="{Binding UncheckAttachmentTracksCommand}" />
+              </MenuItem>
+            </ContextMenu>
+          </Border.ContextMenu>
           <Grid RowDefinitions="Auto,Auto,*,Auto">
-            <TextBlock Grid.Row="0" Classes="h2" Text="输入文件" Margin="0,0,0,8" />
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+              <TextBlock Grid.Column="0" Classes="h2" Text="输入文件（可以拖放文件或者目录）" />
+              <TextBlock Grid.Column="1" Classes="subtitle"
+                         Text="{Binding TracksSummary}"
+                         VerticalAlignment="Center" />
+            </Grid>
 
-            <!-- 选项 checkbox -->
-            <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="4" Margin="0,0,0,8">
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="18" Margin="0,0,0,8">
               <CheckBox Content="拖入时追加（不替换已有列表）"
                         IsChecked="{Binding AppendOnDragAndDrop}"
                         Foreground="{StaticResource MacaronTextBrush}" />
@@ -89,12 +129,12 @@
                         Foreground="{StaticResource MacaronTextBrush}" />
             </StackPanel>
 
-            <!-- 拖入边框 + 文件列表 -->
             <Border Grid.Row="2"
                     Name="DropZone"
                     Classes="drop-target"
                     Classes.active="{Binding IsDragOver}"
-                    DragDrop.AllowDrop="True">
+                    DragDrop.AllowDrop="True"
+                    Padding="0">
               <Grid>
                 <StackPanel HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -119,65 +159,65 @@
                          BorderThickness="0">
                   <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:InputFileItem">
-                      <TextBlock Text="{Binding DisplayName}"
-                                 ToolTip.Tip="{Binding FullPath}"
-                                 Foreground="{StaticResource MacaronTextBrush}" />
+                      <StackPanel Margin="4,4,4,6" Spacing="2">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Grid.Column="0"
+                                     Text="{Binding DisplayName}"
+                                     ToolTip.Tip="{Binding FullPath}"
+                                     Foreground="{StaticResource MacaronTextBrush}"
+                                     FontWeight="SemiBold"
+                                     TextTrimming="CharacterEllipsis" />
+                          <TextBlock Grid.Column="1"
+                                     Text="{Binding TracksSummary}"
+                                     Foreground="{StaticResource MacaronTextSoftBrush}"
+                                     FontSize="12"
+                                     Margin="12,0,0,0"
+                                     VerticalAlignment="Center" />
+                        </Grid>
+                        <TextBlock Text="正在解析轨道…"
+                                   IsVisible="{Binding IsLoadingTracks}"
+                                   Foreground="{StaticResource MacaronTextSoftBrush}"
+                                   FontSize="12"
+                                   Margin="18,0,0,0" />
+                        <ItemsControl ItemsSource="{Binding Tracks}">
+                          <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:TrackItem">
+                              <Grid ColumnDefinitions="Auto,Auto,*" Margin="18,1,0,1">
+                                <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding TypeLabel}"
+                                           Foreground="{StaticResource MacaronTextSoftBrush}"
+                                           FontSize="12"
+                                           MinWidth="34"
+                                           Margin="6,0,8,0"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding Display}"
+                                           VerticalAlignment="Center"
+                                           Foreground="{StaticResource MacaronTextBrush}"
+                                           TextTrimming="CharacterEllipsis" />
+                              </Grid>
+                            </DataTemplate>
+                          </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                      </StackPanel>
                     </DataTemplate>
                   </ListBox.ItemTemplate>
                 </ListBox>
               </Grid>
             </Border>
 
-            <!-- 底部按钮 -->
             <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="8"
                         HorizontalAlignment="Right" Margin="0,8,0,0">
-              <Button Classes="macaron" Content="选择…"
-                      Command="{Binding SelectTracksCommand}" />
-              <Button Classes="macaron lavender" Content="移除"
+              <Button Classes="macaron" Content="添加输入文件..."
+                      Command="{Binding BrowseInputCommand}" />
+              <Button Classes="macaron lavender" Content="移除所选文件"
                       Command="{Binding RemoveSelectedFileCommand}" />
               <Button Classes="macaron sky" Content="清空"
                       Command="{Binding ClearInputFilesCommand}" />
             </StackPanel>
           </Grid>
         </Border>
-
-        <!-- 右：选中文件信息（轨道列表） -->
-        <Border Grid.Column="1" Classes="glass" Margin="8,0,0,0">
-          <Grid RowDefinitions="Auto,*">
-            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-              <TextBlock Grid.Column="0" Classes="h2" Text="选中文件信息" />
-              <TextBlock Grid.Column="1" Classes="subtitle"
-                         Text="{Binding TracksSummary}"
-                         VerticalAlignment="Center" />
-            </Grid>
-            <Border Grid.Row="1" BorderBrush="{StaticResource MacaronBorderBrush}"
-                    BorderThickness="1" CornerRadius="8">
-              <ListBox ItemsSource="{Binding Tracks}"
-                       Background="Transparent"
-                       BorderThickness="0">
-                <ListBox.ItemTemplate>
-                  <DataTemplate x:DataType="vm:TrackItem">
-                    <Grid ColumnDefinitions="Auto,Auto,*" Margin="4,2">
-                      <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" />
-                      <Border Grid.Column="1"
-                              Background="{Binding TypeColor}"
-                              CornerRadius="6"
-                              Padding="6,2" Margin="6,0,8,0">
-                        <TextBlock Text="{Binding TypeLabel}"
-                                   Foreground="{StaticResource MacaronTextBrush}"
-                                   FontSize="11" FontWeight="SemiBold" />
-                      </Border>
-                      <TextBlock Grid.Column="2" Text="{Binding Display}"
-                                 VerticalAlignment="Center"
-                                 Foreground="{StaticResource MacaronTextBrush}" />
-                    </Grid>
-                  </DataTemplate>
-                </ListBox.ItemTemplate>
-              </ListBox>
-            </Border>
-          </Grid>
-        </Border>
-      </Grid>
 
       <!-- 输出路径栏 -->
       <Border Grid.Row="3" Classes="glass" Margin="0,12,0,8" Padding="14,10">
@@ -201,7 +241,7 @@
       <Border Grid.Row="4" Classes="glass" Padding="14,10">
         <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto">
           <!-- 第一行：选项 -->
-          <CheckBox Grid.Row="0" Grid.Column="0" Content="完成弹窗"
+          <CheckBox Grid.Row="0" Grid.Column="0" Content="提取完成弹窗"
                     IsChecked="{Binding ShowPopup}"
                     Foreground="{StaticResource MacaronTextBrush}"
                     VerticalAlignment="Center" Margin="0,0,16,0" />

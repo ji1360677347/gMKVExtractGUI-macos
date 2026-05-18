@@ -75,7 +75,7 @@ namespace gMKVToolNix.MkvExtract
                     parameters.CueExtractionMode,
                     parameters.FilenamePatterns,
                     parameters.DisableBomForTextFiles,
-                    parameters.OverwriteExistingFile,
+                    parameters.ExistingFileHandling,
                     parameters.UseRawExtractionMode,
                     parameters.UseFullRawExtractionMode
                 );
@@ -95,7 +95,7 @@ namespace gMKVToolNix.MkvExtract
             , CuesExtractionMode argCueExtractionMode
             , gMKVExtractFilenamePatterns argFilenamePatterns
             , bool argDisableBomForTextFiles
-            , bool argOverwriteExistingFile
+            , ExistingFileHandling argExistingFileHandling
             , bool argUseRawExtractionMode
             , bool argUseFullRawExtractionMode
         )
@@ -126,7 +126,7 @@ namespace gMKVToolNix.MkvExtract
                             argCueExtractionMode, 
                             argFilenamePatterns,
                             argDisableBomForTextFiles,
-                            argOverwriteExistingFile,
+                            argExistingFileHandling,
                             argUseRawExtractionMode,
                             argUseFullRawExtractionMode,
                             _Version));
@@ -267,7 +267,7 @@ namespace gMKVToolNix.MkvExtract
                     CuesExtractionMode.NoCues,
                     parameters.FilenamePatterns,
                     parameters.DisableBomForTextFiles,
-                    parameters.OverwriteExistingFile,
+                    parameters.ExistingFileHandling,
                     parameters.UseRawExtractionMode,
                     parameters.UseFullRawExtractionMode
                 );
@@ -292,7 +292,7 @@ namespace gMKVToolNix.MkvExtract
                     CuesExtractionMode.OnlyCues,
                     parameters.FilenamePatterns,
                     parameters.DisableBomForTextFiles,
-                    parameters.OverwriteExistingFile,
+                    parameters.ExistingFileHandling,
                     parameters.UseRawExtractionMode,
                     parameters.UseFullRawExtractionMode
                 );
@@ -313,7 +313,7 @@ namespace gMKVToolNix.MkvExtract
                     parameters.OutputDirectory,
                     parameters.FilenamePatterns,
                     parameters.DisableBomForTextFiles,
-                    parameters.OverwriteExistingFile,
+                    parameters.ExistingFileHandling,
                     parameters.UseRawExtractionMode,
                     parameters.UseFullRawExtractionMode
                 );
@@ -329,7 +329,7 @@ namespace gMKVToolNix.MkvExtract
             string argOutputDirectory, 
             gMKVExtractFilenamePatterns argFilenamePatterns,
             bool argDisableBomForTextFiles,
-            bool argOverwriteExistingFile,
+            ExistingFileHandling argExistingFileHandling,
             bool argUseRawExtractionMode,
             bool argUseFullRawExtractionMode)
         {
@@ -341,8 +341,12 @@ namespace gMKVToolNix.MkvExtract
                 argOutputDirectory, 
                 argMKVFile, 
                 argFilenamePatterns,
-                argOverwriteExistingFile,
+                argExistingFileHandling,
                 MkvExtractModes.cuesheet);
+            if (cueFile == null)
+            {
+                return;
+            }
 
             List<string> errors = new List<string>();
             StreamWriter outputFileWriter = null;
@@ -402,7 +406,7 @@ namespace gMKVToolNix.MkvExtract
                     parameters.OutputDirectory,
                     parameters.FilenamePatterns,
                     parameters.DisableBomForTextFiles,
-                    parameters.OverwriteExistingFile,
+                    parameters.ExistingFileHandling,
                     parameters.UseRawExtractionMode,
                     parameters.UseFullRawExtractionMode
                 );
@@ -418,7 +422,7 @@ namespace gMKVToolNix.MkvExtract
             string argOutputDirectory, 
             gMKVExtractFilenamePatterns argFilenamePatterns,
             bool argDisableBomForTextFiles,
-            bool argOverwriteExistingFile,
+            ExistingFileHandling argExistingFileHandling,
             bool argUseRawExtractionMode,
             bool argUseFullRawExtractionMode)
         {
@@ -430,8 +434,12 @@ namespace gMKVToolNix.MkvExtract
                 argOutputDirectory, 
                 argMKVFile, 
                 argFilenamePatterns,
-                argOverwriteExistingFile,
+                argExistingFileHandling,
                 MkvExtractModes.tags);
+            if (tagsFile == null)
+            {
+                return;
+            }
 
             List<string> errors = new List<string>();
             StreamWriter outputFileWriter = null;
@@ -500,7 +508,7 @@ namespace gMKVToolNix.MkvExtract
             , CuesExtractionMode argCueExtractionMode
             , gMKVExtractFilenamePatterns argFilenamePatterns
             , bool argDisableBomForTextFiles
-            , bool argOverwriteExistingFile
+            , ExistingFileHandling argExistingFileHandling
             , bool argUseRawExtractionMode
             , bool argUseFullRawExtractionMode
             , gMKVVersion version)
@@ -514,48 +522,50 @@ namespace gMKVToolNix.MkvExtract
                 // if we are in a mode that requires timecodes extraction, add the parameter for the track
                 if (argTimecodesExtractionMode != TimecodesExtractionMode.NoTimecodes)
                 {
-                    trackParameterList.Add(new TrackParameter(
-                        // Since MKVToolNix v17.0 the timecode word has been replaced with timestamp
-                        version.FileMajorPart >= 17 ? MkvExtractModes.timestamps_v2 : MkvExtractModes.timecodes_v2,
-                        "",
-                        string.Format("{0}:\"{1}\"",
-                            track.TrackID,
-                            argSeg.GetOutputFilename(
-                                argOutputDirectory, 
-                                argMKVFile, 
-                                argFilenamePatterns,
-                                argOverwriteExistingFile,
-                                MkvExtractModes.timestamps_v2)
-                        ),
-                        false,
-                        argDisableBomForTextFiles,
-                        argUseRawExtractionMode,
-                        argUseFullRawExtractionMode,
-                        ""
-                    ));
+                    string timecodesFile = argSeg.GetOutputFilename(
+                        argOutputDirectory,
+                        argMKVFile,
+                        argFilenamePatterns,
+                        argExistingFileHandling,
+                        MkvExtractModes.timestamps_v2);
+                    if (timecodesFile != null)
+                    {
+                        trackParameterList.Add(new TrackParameter(
+                            // Since MKVToolNix v17.0 the timecode word has been replaced with timestamp
+                            version.FileMajorPart >= 17 ? MkvExtractModes.timestamps_v2 : MkvExtractModes.timecodes_v2,
+                            "",
+                            string.Format("{0}:\"{1}\"", track.TrackID, timecodesFile),
+                            false,
+                            argDisableBomForTextFiles,
+                            argUseRawExtractionMode,
+                            argUseFullRawExtractionMode,
+                            ""
+                        ));
+                    }
                 }
 
                 // if we are in a mode that requires cues extraction, add the parameter for the track
                 if (argCueExtractionMode != CuesExtractionMode.NoCues)
                 {
-                    trackParameterList.Add(new TrackParameter(
-                        MkvExtractModes.cues,
-                        "",
-                        string.Format("{0}:\"{1}\"",
-                            track.TrackID,
-                            argSeg.GetOutputFilename(
-                                argOutputDirectory, 
-                                argMKVFile, 
-                                argFilenamePatterns,
-                                argOverwriteExistingFile,
-                                MkvExtractModes.cues)
-                        ),
-                        false,
-                        argDisableBomForTextFiles,
-                        argUseRawExtractionMode,
-                        argUseFullRawExtractionMode,
-                        ""
-                    ));
+                    string cuesFile = argSeg.GetOutputFilename(
+                        argOutputDirectory,
+                        argMKVFile,
+                        argFilenamePatterns,
+                        argExistingFileHandling,
+                        MkvExtractModes.cues);
+                    if (cuesFile != null)
+                    {
+                        trackParameterList.Add(new TrackParameter(
+                            MkvExtractModes.cues,
+                            "",
+                            string.Format("{0}:\"{1}\"", track.TrackID, cuesFile),
+                            false,
+                            argDisableBomForTextFiles,
+                            argUseRawExtractionMode,
+                            argUseFullRawExtractionMode,
+                            ""
+                        ));
+                    }
                 }
 
                 // check if the mode requires the extraction of the segment itself
@@ -574,25 +584,26 @@ namespace gMKVToolNix.MkvExtract
                     )
                 )
                 {
-                    // add the parameter for extracting the track
-                    trackParameterList.Add(new TrackParameter(
-                        MkvExtractModes.tracks,
-                        "",
-                        string.Format("{0}:\"{1}\"",
-                            track.TrackID,
-                            argSeg.GetOutputFilename(
-                                argOutputDirectory, 
-                                argMKVFile, 
-                                argFilenamePatterns,
-                                argOverwriteExistingFile,
-                                MkvExtractModes.tracks)
-                        ),
-                        false,
-                        argDisableBomForTextFiles,
-                        argUseRawExtractionMode,
-                        argUseFullRawExtractionMode,
-                        ""
-                    ));
+                    string trackFile = argSeg.GetOutputFilename(
+                        argOutputDirectory,
+                        argMKVFile,
+                        argFilenamePatterns,
+                        argExistingFileHandling,
+                        MkvExtractModes.tracks);
+                    if (trackFile != null)
+                    {
+                        // add the parameter for extracting the track
+                        trackParameterList.Add(new TrackParameter(
+                            MkvExtractModes.tracks,
+                            "",
+                            string.Format("{0}:\"{1}\"", track.TrackID, trackFile),
+                            false,
+                            argDisableBomForTextFiles,
+                            argUseRawExtractionMode,
+                            argUseFullRawExtractionMode,
+                            ""
+                        ));
+                    }
                 }
             }
             else if (argSeg is gMKVAttachment attachment)
@@ -613,25 +624,26 @@ namespace gMKVToolNix.MkvExtract
                     )
                 )
                 {
-                    // add the parameter for extracting the attachment
-                    trackParameterList.Add(new TrackParameter(
-                        MkvExtractModes.attachments,
-                        "",
-                        string.Format("{0}:\"{1}\"",
-                            attachment.ID,
-                            argSeg.GetOutputFilename(
-                                argOutputDirectory, 
-                                argMKVFile, 
-                                argFilenamePatterns,
-                                argOverwriteExistingFile,
-                                MkvExtractModes.attachments)
-                        ),
-                        false,
-                        argDisableBomForTextFiles,
-                        argUseRawExtractionMode,
-                        argUseFullRawExtractionMode,
-                        ""
-                    ));
+                    string attachmentFile = argSeg.GetOutputFilename(
+                        argOutputDirectory,
+                        argMKVFile,
+                        argFilenamePatterns,
+                        argExistingFileHandling,
+                        MkvExtractModes.attachments);
+                    if (attachmentFile != null)
+                    {
+                        // add the parameter for extracting the attachment
+                        trackParameterList.Add(new TrackParameter(
+                            MkvExtractModes.attachments,
+                            "",
+                            string.Format("{0}:\"{1}\"", attachment.ID, attachmentFile),
+                            false,
+                            argDisableBomForTextFiles,
+                            argUseRawExtractionMode,
+                            argUseFullRawExtractionMode,
+                            ""
+                        ));
+                    }
                 }
             }
             else if (argSeg is gMKVChapter)
@@ -663,9 +675,13 @@ namespace gMKVToolNix.MkvExtract
                         argOutputDirectory, 
                         argMKVFile, 
                         argFilenamePatterns, 
-                        argOverwriteExistingFile,
+                        argExistingFileHandling,
                         MkvExtractModes.chapters,
                         argChapterType);
+                    if (chapterFile == null)
+                    {
+                        return trackParameterList;
+                    }
 
                     // add the parameter for extracting the chapters
                     // Since MKVToolNix v17.0, items that were written to the standard output (chapters, tags and cue sheets) are now always written to files instead.

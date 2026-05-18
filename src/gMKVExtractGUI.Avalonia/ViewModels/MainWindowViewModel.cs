@@ -17,12 +17,22 @@ using gMKVToolNix.MkvExtract;
 using gMKVToolNix.MkvMerge;
 using gMKVToolNix.Platform;
 using gMKVToolNix.Segments;
+using gMKVToolNix.UI.Services;
+using gMKVToolNix.UI.ViewModels;
 using gMKVToolNix.UI.Views;
 
 namespace gMKVToolNix.UI.ViewModels;
 
 public class MainWindowViewModel : INotifyPropertyChanged
 {
+    private static readonly HashSet<string> SupportedInputExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".mkv",
+        ".mka",
+        ".mks",
+        ".webm",
+    };
+
     public ObservableCollection<InputFileItem> InputFiles { get; } = new();
     public ObservableCollection<TrackItem> Tracks { get; } = new();
     public ObservableCollection<string> ChapterTypes { get; }
@@ -53,7 +63,20 @@ public class MainWindowViewModel : INotifyPropertyChanged
     public bool UseSourceDirectory
     {
         get => _useSourceDirectory;
-        set => SetField(ref _useSourceDirectory, value);
+        set
+        {
+            if (SetField(ref _useSourceDirectory, value))
+            {
+                if (value)
+                {
+                    _outputDirectoryStrategy = OutputDirectoryStrategy.SourceDirectory;
+                }
+                else if (_outputDirectoryStrategy == OutputDirectoryStrategy.SourceDirectory)
+                {
+                    _outputDirectoryStrategy = OutputDirectoryStrategy.CustomDirectory;
+                }
+            }
+        }
     }
 
     private bool _appendOnDragAndDrop;
@@ -141,6 +164,72 @@ public class MainWindowViewModel : INotifyPropertyChanged
         set => SetField(ref _tracksSummary, value);
     }
 
+    private string _checkAllTracksHeader = "勾选全部轨道 (0/0)";
+    public string CheckAllTracksHeader { get => _checkAllTracksHeader; set => SetField(ref _checkAllTracksHeader, value); }
+
+    private string _uncheckAllTracksHeader = "取消全部轨道 (0/0)";
+    public string UncheckAllTracksHeader { get => _uncheckAllTracksHeader; set => SetField(ref _uncheckAllTracksHeader, value); }
+
+    private string _checkVideoTracksHeader = "勾选视频轨道... (0/0)";
+    public string CheckVideoTracksHeader { get => _checkVideoTracksHeader; set => SetField(ref _checkVideoTracksHeader, value); }
+
+    private string _uncheckVideoTracksHeader = "取消视频轨道... (0/0)";
+    public string UncheckVideoTracksHeader { get => _uncheckVideoTracksHeader; set => SetField(ref _uncheckVideoTracksHeader, value); }
+
+    private string _checkAudioTracksHeader = "勾选音频轨道... (0/0)";
+    public string CheckAudioTracksHeader { get => _checkAudioTracksHeader; set => SetField(ref _checkAudioTracksHeader, value); }
+
+    private string _uncheckAudioTracksHeader = "取消音频轨道... (0/0)";
+    public string UncheckAudioTracksHeader { get => _uncheckAudioTracksHeader; set => SetField(ref _uncheckAudioTracksHeader, value); }
+
+    private string _checkSubtitleTracksHeader = "勾选字幕轨道... (0/0)";
+    public string CheckSubtitleTracksHeader { get => _checkSubtitleTracksHeader; set => SetField(ref _checkSubtitleTracksHeader, value); }
+
+    private string _uncheckSubtitleTracksHeader = "取消字幕轨道... (0/0)";
+    public string UncheckSubtitleTracksHeader { get => _uncheckSubtitleTracksHeader; set => SetField(ref _uncheckSubtitleTracksHeader, value); }
+
+    private string _checkChapterTracksHeader = "勾选章节轨道... (0/0)";
+    public string CheckChapterTracksHeader { get => _checkChapterTracksHeader; set => SetField(ref _checkChapterTracksHeader, value); }
+
+    private string _uncheckChapterTracksHeader = "取消章节轨道... (0/0)";
+    public string UncheckChapterTracksHeader { get => _uncheckChapterTracksHeader; set => SetField(ref _uncheckChapterTracksHeader, value); }
+
+    private string _checkAttachmentTracksHeader = "勾选附件轨道... (0/0)";
+    public string CheckAttachmentTracksHeader { get => _checkAttachmentTracksHeader; set => SetField(ref _checkAttachmentTracksHeader, value); }
+
+    private string _uncheckAttachmentTracksHeader = "取消附件轨道... (0/0)";
+    public string UncheckAttachmentTracksHeader { get => _uncheckAttachmentTracksHeader; set => SetField(ref _uncheckAttachmentTracksHeader, value); }
+
+    private string _allVideoTracksHeader = "全部视频轨道 (0/0)";
+    public string AllVideoTracksHeader { get => _allVideoTracksHeader; set => SetField(ref _allVideoTracksHeader, value); }
+
+    private string _allAudioTracksHeader = "全部音频轨道 (0/0)";
+    public string AllAudioTracksHeader { get => _allAudioTracksHeader; set => SetField(ref _allAudioTracksHeader, value); }
+
+    private string _allSubtitleTracksHeader = "全部字幕轨道 (0/0)";
+    public string AllSubtitleTracksHeader { get => _allSubtitleTracksHeader; set => SetField(ref _allSubtitleTracksHeader, value); }
+
+    private string _allChapterTracksHeader = "全部章节轨道 (0/0)";
+    public string AllChapterTracksHeader { get => _allChapterTracksHeader; set => SetField(ref _allChapterTracksHeader, value); }
+
+    private string _allAttachmentTracksHeader = "全部附件轨道 (0/0)";
+    public string AllAttachmentTracksHeader { get => _allAttachmentTracksHeader; set => SetField(ref _allAttachmentTracksHeader, value); }
+
+    private string _uncheckedVideoTracksHeader = "全部视频轨道 (0/0)";
+    public string UncheckedVideoTracksHeader { get => _uncheckedVideoTracksHeader; set => SetField(ref _uncheckedVideoTracksHeader, value); }
+
+    private string _uncheckedAudioTracksHeader = "全部音频轨道 (0/0)";
+    public string UncheckedAudioTracksHeader { get => _uncheckedAudioTracksHeader; set => SetField(ref _uncheckedAudioTracksHeader, value); }
+
+    private string _uncheckedSubtitleTracksHeader = "全部字幕轨道 (0/0)";
+    public string UncheckedSubtitleTracksHeader { get => _uncheckedSubtitleTracksHeader; set => SetField(ref _uncheckedSubtitleTracksHeader, value); }
+
+    private string _uncheckedChapterTracksHeader = "全部章节轨道 (0/0)";
+    public string UncheckedChapterTracksHeader { get => _uncheckedChapterTracksHeader; set => SetField(ref _uncheckedChapterTracksHeader, value); }
+
+    private string _uncheckedAttachmentTracksHeader = "全部附件轨道 (0/0)";
+    public string UncheckedAttachmentTracksHeader { get => _uncheckedAttachmentTracksHeader; set => SetField(ref _uncheckedAttachmentTracksHeader, value); }
+
     private bool _isDragOver;
     public bool IsDragOver
     {
@@ -186,10 +275,28 @@ public class MainWindowViewModel : INotifyPropertyChanged
     public ICommand ShowLogCommand { get; }
     public ICommand ShowJobsCommand { get; }
     public ICommand ShowOptionsCommand { get; }
+    public ICommand CheckAllTracksCommand { get; }
+    public ICommand UncheckAllTracksCommand { get; }
+    public ICommand CheckVideoTracksCommand { get; }
+    public ICommand UncheckVideoTracksCommand { get; }
+    public ICommand CheckAudioTracksCommand { get; }
+    public ICommand UncheckAudioTracksCommand { get; }
+    public ICommand CheckSubtitleTracksCommand { get; }
+    public ICommand UncheckSubtitleTracksCommand { get; }
+    public ICommand CheckChapterTracksCommand { get; }
+    public ICommand UncheckChapterTracksCommand { get; }
+    public ICommand CheckAttachmentTracksCommand { get; }
+    public ICommand UncheckAttachmentTracksCommand { get; }
+
+    public event Action<IReadOnlyList<string>>? UnsupportedInputFilesRejected;
+    public event Action<int, int>? ExtractionCompleted;
 
     private gMKVExtract? _extractor;
     private LogWindow? _logWindow;
-    private JobsWindow? _jobsWindow;
+    private OutputDirectoryStrategy _outputDirectoryStrategy = OutputDirectoryStrategy.SourceDirectory;
+
+    // 全局单例 JobsWindow 实例（与 JobsWindowViewModel.Instance 配套）
+    private static JobsWindow? _sharedJobsWindow;
 
     public MainWindowViewModel()
     {
@@ -200,6 +307,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
         {
             OnPropertyChanged(nameof(HasFiles));
             OnPropertyChanged(nameof(HasNoFiles));
+            RefreshTrackSelectionSummary();
         };
 
         BrowseInputCommand = new RelayCommand(async () => await BrowseInputAsync());
@@ -210,22 +318,49 @@ public class MainWindowViewModel : INotifyPropertyChanged
         RemoveSelectedFileCommand = new RelayCommand(RemoveSelectedFile);
         ClearInputFilesCommand = new RelayCommand(ClearInputFiles);
         ExtractCommand = new RelayCommand(async () => await ExtractAsync());
-        AddJobCommand = new RelayCommand(() => StatusText = "加入队列：尚未实现（Round 4）");
+        AddJobCommand = new RelayCommand(async () => await AddCurrentSelectionToQueueAsync());
         AbortCommand = new RelayCommand(Abort);
         AbortAllCommand = new RelayCommand(AbortAll);
         ShowLogCommand = new RelayCommand(ShowLog);
         ShowJobsCommand = new RelayCommand(ShowJobs);
         ShowOptionsCommand = new RelayCommand(ShowOptions);
+        CheckAllTracksCommand = new RelayCommand(() => SetTracksChecked(_ => true, true));
+        UncheckAllTracksCommand = new RelayCommand(() => SetTracksChecked(_ => true, false));
+        CheckVideoTracksCommand = new RelayCommand(() => SetTracksChecked(IsVideoTrack, true));
+        UncheckVideoTracksCommand = new RelayCommand(() => SetTracksChecked(IsVideoTrack, false));
+        CheckAudioTracksCommand = new RelayCommand(() => SetTracksChecked(IsAudioTrack, true));
+        UncheckAudioTracksCommand = new RelayCommand(() => SetTracksChecked(IsAudioTrack, false));
+        CheckSubtitleTracksCommand = new RelayCommand(() => SetTracksChecked(IsSubtitleTrack, true));
+        UncheckSubtitleTracksCommand = new RelayCommand(() => SetTracksChecked(IsSubtitleTrack, false));
+        CheckChapterTracksCommand = new RelayCommand(() => SetTracksChecked(IsChapterTrack, true));
+        UncheckChapterTracksCommand = new RelayCommand(() => SetTracksChecked(IsChapterTrack, false));
+        CheckAttachmentTracksCommand = new RelayCommand(() => SetTracksChecked(IsAttachmentTrack, true));
+        UncheckAttachmentTracksCommand = new RelayCommand(() => SetTracksChecked(IsAttachmentTrack, false));
 
-        // 启动时自动探测一次
-        AutoDetectMkvToolnix();
+        SyncFromSettings();
+
+        // 启动时仅在没有持久化路径时自动探测
+        if (string.IsNullOrEmpty(MkvToolnixPath))
+        {
+            AutoDetectMkvToolnix();
+        }
+        else
+        {
+            StatusText = $"已恢复设置：{MkvToolnixPath}";
+        }
     }
 
     public void AddInputFiles(IEnumerable<string> paths)
     {
+        var rejectedFiles = new List<string>();
+        var addedFiles = new List<InputFileItem>();
+
         if (!AppendOnDragAndDrop)
         {
             InputFiles.Clear();
+            Tracks.Clear();
+            TracksSummary = string.Empty;
+            SelectedInputFile = null;
         }
 
         foreach (var path in paths)
@@ -238,17 +373,32 @@ public class MainWindowViewModel : INotifyPropertyChanged
             {
                 foreach (var f in Directory.EnumerateFiles(path, "*.*", SearchOption.TopDirectoryOnly))
                 {
-                    var ext = Path.GetExtension(f).ToLowerInvariant();
-                    if (ext is ".mkv" or ".mka" or ".mks" or ".webm")
+                    if (IsSupportedInputFile(f))
                     {
                         if (!InputFiles.Any(x => x.FullPath == f))
-                            InputFiles.Add(new InputFileItem(f));
+                        {
+                            var item = new InputFileItem(f);
+                            InputFiles.Add(item);
+                            addedFiles.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        rejectedFiles.Add(f);
                     }
                 }
             }
             else
             {
-                InputFiles.Add(new InputFileItem(path));
+                if (!IsSupportedInputFile(path))
+                {
+                    rejectedFiles.Add(path);
+                    continue;
+                }
+
+                var item = new InputFileItem(path);
+                InputFiles.Add(item);
+                addedFiles.Add(item);
             }
         }
 
@@ -256,8 +406,24 @@ public class MainWindowViewModel : INotifyPropertyChanged
         {
             SelectedInputFile = InputFiles[0];
         }
-        StatusText = $"已加载 {InputFiles.Count} 个文件";
+        if (rejectedFiles.Count > 0)
+        {
+            UnsupportedInputFilesRejected?.Invoke(rejectedFiles);
+            StatusText = $"已跳过 {rejectedFiles.Count} 个不支持的文件，当前已加载 {InputFiles.Count} 个文件";
+        }
+        else
+        {
+            StatusText = $"已加载 {InputFiles.Count} 个文件";
+        }
+
+        if (addedFiles.Count > 0)
+        {
+            _ = LoadTracksForFilesAsync(addedFiles);
+        }
     }
+
+    private static bool IsSupportedInputFile(string path)
+        => SupportedInputExtensions.Contains(Path.GetExtension(path));
 
     private void AutoDetectMkvToolnix()
     {
@@ -319,12 +485,13 @@ public class MainWindowViewModel : INotifyPropertyChanged
         {
             OutputDirectory = dir!;
             UseSourceDirectory = false;
+            _outputDirectoryStrategy = OutputDirectoryStrategy.CustomDirectory;
         }
     }
 
     private void SelectAllTracks()
     {
-        foreach (var t in Tracks) t.IsSelected = true;
+        SetTracksChecked(_ => true, true);
     }
 
     private void RemoveSelectedFile()
@@ -367,33 +534,75 @@ public class MainWindowViewModel : INotifyPropertyChanged
             return;
         }
 
-        var path = SelectedInputFile.FullPath;
+        var file = SelectedInputFile;
+        var path = file.FullPath;
         StatusText = $"正在解析：{Path.GetFileName(path)}…";
+
+        try
+        {
+            await LoadTracksForFileAsync(file);
+            ShowTracksForFile(file);
+            StatusText = $"已解析：{Path.GetFileName(path)}";
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"解析失败：{ex.Message}";
+        }
+    }
+
+    private async Task LoadTracksForFilesAsync(IEnumerable<InputFileItem> files)
+    {
+        foreach (var file in files.ToList())
+        {
+            if (!InputFiles.Contains(file)) continue;
+            await LoadTracksForFileAsync(file);
+        }
+
+        if (SelectedInputFile is not null)
+        {
+            ShowTracksForFile(SelectedInputFile);
+        }
+    }
+
+    private async Task LoadTracksForFileAsync(InputFileItem file)
+    {
+        if (file.TracksLoaded || file.IsLoadingTracks || !File.Exists(file.FullPath))
+        {
+            return;
+        }
+        if (string.IsNullOrEmpty(MkvToolnixPath))
+        {
+            StatusText = "未配置 MKVToolnix 路径，无法解析轨道";
+            return;
+        }
+
+        file.IsLoadingTracks = true;
+        StatusText = $"正在解析：{Path.GetFileName(file.FullPath)}…";
 
         try
         {
             var segments = await Task.Run(() =>
             {
                 var merge = new gMKVMerge(MkvToolnixPath);
-                return merge.GetMKVSegments(path);
+                return merge.GetMKVSegments(file.FullPath);
             });
 
+            file.Tracks.Clear();
             int v = 0, a = 0, s = 0, c = 0, att = 0;
             foreach (var seg in segments)
             {
                 if (seg is gMKVTrack tr)
                 {
-                    var item = new TrackItem
+                    file.Tracks.Add(new TrackItem
                     {
-                        IsSelected = true,
+                        IsSelected = false,
                         Display = BuildTrackDisplay(tr),
                         TypeLabel = TrackTypeLabel(tr.TrackType),
                         TypeColor = TrackTypeBrush(tr.TrackType),
                         TrackNumber = tr.TrackNumber,
                         TrackId = tr.TrackID,
                         Segment = tr,
-                    };
-                    Tracks.Add(item);
+                    });
 
                     switch (tr.TrackType)
                     {
@@ -404,7 +613,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
                 }
                 else if (seg is gMKVChapter ch)
                 {
-                    Tracks.Add(new TrackItem
+                    file.Tracks.Add(new TrackItem
                     {
                         IsSelected = false,
                         Display = $"章节（{ch.ChapterCount} 个）",
@@ -416,7 +625,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
                 }
                 else if (seg is gMKVAttachment at)
                 {
-                    Tracks.Add(new TrackItem
+                    file.Tracks.Add(new TrackItem
                     {
                         IsSelected = false,
                         Display = $"附件：{at.Filename}（{at.MimeType}）",
@@ -428,14 +637,114 @@ public class MainWindowViewModel : INotifyPropertyChanged
                 }
             }
 
-            TracksSummary = $"视频 {v} · 音频 {a} · 字幕 {s} · 章节 {c} · 附件 {att}";
-            StatusText = $"已解析：{Path.GetFileName(path)}";
+            file.TracksSummary = $"视频 {v} · 音频 {a} · 字幕 {s} · 章节 {c} · 附件 {att}";
+            file.TracksLoaded = true;
+            foreach (var track in file.Tracks)
+            {
+                track.SelectionChanged = RefreshTrackSelectionSummary;
+            }
+            RefreshTrackSelectionSummary();
         }
         catch (Exception ex)
         {
-            StatusText = $"解析失败：{ex.Message}";
+            file.TracksSummary = $"解析失败：{ex.Message}";
+            StatusText = file.TracksSummary;
+        }
+        finally
+        {
+            file.IsLoadingTracks = false;
         }
     }
+
+    private void ShowTracksForFile(InputFileItem file)
+    {
+        Tracks.Clear();
+        foreach (var track in file.Tracks)
+        {
+            Tracks.Add(track);
+        }
+        RefreshTrackSelectionSummary();
+    }
+
+    private void SetTracksChecked(Func<TrackItem, bool> predicate, bool isSelected)
+    {
+        var changed = 0;
+        foreach (var track in InputFiles.SelectMany(f => f.Tracks).Where(predicate))
+        {
+            if (track.IsSelected != isSelected)
+            {
+                track.IsSelected = isSelected;
+                changed++;
+            }
+        }
+
+        RefreshTrackSelectionSummary();
+        StatusText = $"{(isSelected ? "已勾选" : "已取消")} {changed} 个轨道";
+    }
+
+    private void RefreshTrackSelectionSummary()
+    {
+        var allTracks = InputFiles.SelectMany(f => f.Tracks).ToList();
+        var checkedAllTracksCount = allTracks.Count(t => t.IsSelected);
+        var allTracksCount = allTracks.Count;
+
+        var video = CountTracks(allTracks, IsVideoTrack);
+        var audio = CountTracks(allTracks, IsAudioTrack);
+        var subtitle = CountTracks(allTracks, IsSubtitleTrack);
+        var chapter = CountTracks(allTracks, IsChapterTrack);
+        var attachment = CountTracks(allTracks, IsAttachmentTrack);
+
+        TracksSummary = $"{InputFiles.Count} 文件 · 已勾选 {checkedAllTracksCount}/{allTracksCount} 轨道";
+        StatusText = allTracksCount == 0 ? StatusText : $"已勾选 {checkedAllTracksCount} 个轨道";
+
+        CheckAllTracksHeader = $"勾选全部轨道 ({checkedAllTracksCount}/{allTracksCount})";
+        UncheckAllTracksHeader = $"取消全部轨道 ({allTracksCount - checkedAllTracksCount}/{allTracksCount})";
+
+        CheckVideoTracksHeader = $"勾选视频轨道... ({video.Checked}/{video.Total})";
+        CheckAudioTracksHeader = $"勾选音频轨道... ({audio.Checked}/{audio.Total})";
+        CheckSubtitleTracksHeader = $"勾选字幕轨道... ({subtitle.Checked}/{subtitle.Total})";
+        CheckChapterTracksHeader = $"勾选章节轨道... ({chapter.Checked}/{chapter.Total})";
+        CheckAttachmentTracksHeader = $"勾选附件轨道... ({attachment.Checked}/{attachment.Total})";
+
+        UncheckVideoTracksHeader = $"取消视频轨道... ({video.Total - video.Checked}/{video.Total})";
+        UncheckAudioTracksHeader = $"取消音频轨道... ({audio.Total - audio.Checked}/{audio.Total})";
+        UncheckSubtitleTracksHeader = $"取消字幕轨道... ({subtitle.Total - subtitle.Checked}/{subtitle.Total})";
+        UncheckChapterTracksHeader = $"取消章节轨道... ({chapter.Total - chapter.Checked}/{chapter.Total})";
+        UncheckAttachmentTracksHeader = $"取消附件轨道... ({attachment.Total - attachment.Checked}/{attachment.Total})";
+
+        AllVideoTracksHeader = $"全部视频轨道 ({video.Checked}/{video.Total})";
+        AllAudioTracksHeader = $"全部音频轨道 ({audio.Checked}/{audio.Total})";
+        AllSubtitleTracksHeader = $"全部字幕轨道 ({subtitle.Checked}/{subtitle.Total})";
+        AllChapterTracksHeader = $"全部章节轨道 ({chapter.Checked}/{chapter.Total})";
+        AllAttachmentTracksHeader = $"全部附件轨道 ({attachment.Checked}/{attachment.Total})";
+
+        UncheckedVideoTracksHeader = $"全部视频轨道 ({video.Total - video.Checked}/{video.Total})";
+        UncheckedAudioTracksHeader = $"全部音频轨道 ({audio.Total - audio.Checked}/{audio.Total})";
+        UncheckedSubtitleTracksHeader = $"全部字幕轨道 ({subtitle.Total - subtitle.Checked}/{subtitle.Total})";
+        UncheckedChapterTracksHeader = $"全部章节轨道 ({chapter.Total - chapter.Checked}/{chapter.Total})";
+        UncheckedAttachmentTracksHeader = $"全部附件轨道 ({attachment.Total - attachment.Checked}/{attachment.Total})";
+    }
+
+    private static (int Checked, int Total) CountTracks(IEnumerable<TrackItem> tracks, Func<TrackItem, bool> predicate)
+    {
+        var filtered = tracks.Where(predicate).ToList();
+        return (filtered.Count(t => t.IsSelected), filtered.Count);
+    }
+
+    private static bool IsVideoTrack(TrackItem item)
+        => item.Segment is gMKVTrack { TrackType: MkvTrackType.video };
+
+    private static bool IsAudioTrack(TrackItem item)
+        => item.Segment is gMKVTrack { TrackType: MkvTrackType.audio };
+
+    private static bool IsSubtitleTrack(TrackItem item)
+        => item.Segment is gMKVTrack { TrackType: MkvTrackType.subtitles };
+
+    private static bool IsChapterTrack(TrackItem item)
+        => item.Segment is gMKVChapter;
+
+    private static bool IsAttachmentTrack(TrackItem item)
+        => item.Segment is gMKVAttachment;
 
     private static string BuildTrackDisplay(gMKVTrack tr)
     {
@@ -466,9 +775,9 @@ public class MainWindowViewModel : INotifyPropertyChanged
 
     private async Task ExtractAsync()
     {
-        if (SelectedInputFile is null)
+        if (InputFiles.Count == 0)
         {
-            StatusText = "请先选择一个输入文件";
+            StatusText = "请先添加输入文件";
             return;
         }
         if (string.IsNullOrEmpty(MkvToolnixPath))
@@ -476,8 +785,19 @@ public class MainWindowViewModel : INotifyPropertyChanged
             StatusText = "未配置 MKVToolnix 路径";
             return;
         }
-        var selectedTracks = Tracks.Where(t => t.IsSelected).ToList();
-        if (selectedTracks.Count == 0)
+
+        await LoadTracksForFilesAsync(InputFiles);
+
+        var selectedFiles = InputFiles
+            .Select(file => new
+            {
+                File = file,
+                Tracks = file.Tracks.Where(t => t.IsSelected).ToList(),
+            })
+            .Where(item => item.Tracks.Count > 0)
+            .ToList();
+
+        if (selectedFiles.Count == 0)
         {
             StatusText = "请勾选至少一个轨道";
             return;
@@ -490,40 +810,195 @@ public class MainWindowViewModel : INotifyPropertyChanged
 
         try
         {
-            var inputPath = SelectedInputFile.FullPath;
-            var outputDir = UseSourceDirectory
-                ? Path.GetDirectoryName(inputPath) ?? string.Empty
-                : OutputDirectory;
+            SyncToSettings();
+
+            var chapterType = Enum.TryParse<MkvChapterTypes>(SelectedChapterType, out var ct) ? ct : MkvChapterTypes.XML;
+            var extractionMode = Enum.TryParse<ExtractionMode>(SelectedExtractionMode, out var em) ? em : ExtractionMode.Tracks;
+            var completedFiles = 0;
+            var completedTracks = 0;
+
+            foreach (var selectedFile in selectedFiles)
+            {
+                var inputPath = selectedFile.File.FullPath;
+                var outputDir = ResolveOutputDirectory(inputPath);
+
+                if (string.IsNullOrEmpty(outputDir))
+                {
+                    StatusText = "未设置输出目录";
+                    return;
+                }
+                Directory.CreateDirectory(outputDir);
+
+                var segments = selectedFile.Tracks
+                    .Select(t => t.Segment)
+                    .Where(s => s is not null)
+                    .Cast<gMKVSegment>()
+                    .ToList();
+
+                var parameters = new gMKVExtractSegmentsParameters
+                {
+                    MKVFile = inputPath,
+                    MKVSegmentsToExtract = segments,
+                    OutputDirectory = outputDir,
+                    ChapterType = chapterType,
+                    TimecodesExtractionMode = TimecodesExtractionMode.NoTimecodes,
+                    CueExtractionMode = CuesExtractionMode.NoCues,
+                    FilenamePatterns = new gMKVExtractFilenamePatterns
+                    {
+                        VideoTrackFilenamePattern = VideoPattern,
+                        AudioTrackFilenamePattern = AudioPattern,
+                        SubtitleTrackFilenamePattern = SubtitlePattern,
+                        ChapterFilenamePattern = ChapterPattern,
+                        AttachmentFilenamePattern = AttachmentPattern,
+                        TagsFilenamePattern = TagsPattern,
+                    },
+                    ExistingFileHandling = ResolveExistingFileHandling(),
+                    DisableBomForTextFiles = DisableBomForTextFiles,
+                    UseRawExtractionMode = UseRawExtractionMode,
+                    UseFullRawExtractionMode = UseFullRawExtractionMode,
+                };
+
+                _extractor = CreateExtractorForCurrentRun();
+                StatusText = $"开始提取：{Path.GetFileName(inputPath)}";
+                await Task.Run(() => RunExtraction(_extractor, parameters, extractionMode));
+
+                if (_extractor.ThreadedException is not null)
+                {
+                    StatusText = $"提取失败：{_extractor.ThreadedException.Message}";
+                    return;
+                }
+                if (_extractor.Abort)
+                {
+                    StatusText = "已中止";
+                    return;
+                }
+
+                completedFiles++;
+                completedTracks += selectedFile.Tracks.Count;
+            }
+
+            StatusText = $"提取完成：{completedFiles} 个文件，{completedTracks} 个轨道 ✓";
+            if (ShowPopup)
+            {
+                ExtractionCompleted?.Invoke(completedFiles, completedTracks);
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"错误：{ex.Message}";
+        }
+        finally
+        {
+            IsExtracting = false;
+        }
+    }
+
+    private gMKVExtract CreateExtractorForCurrentRun()
+    {
+        var extractor = new gMKVExtract(MkvToolnixPath);
+        extractor.MkvExtractProgressUpdated += progress =>
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                ProgressValue = progress;
+                ProgressText = $"{progress}%";
+            });
+        };
+        extractor.MkvExtractTrackUpdated += (filename, trackName) =>
+        {
+            Dispatcher.UIThread.Post(() => StatusText = $"正在提取：{trackName}");
+        };
+        return extractor;
+    }
+
+    private static void RunExtraction(gMKVExtract extractor, gMKVExtractSegmentsParameters parameters, ExtractionMode extractionMode)
+    {
+        switch (extractionMode)
+        {
+            case ExtractionMode.Tracks:
+                extractor.ExtractMKVSegmentsThreaded(parameters);
+                break;
+            case ExtractionMode.Timecodes:
+                extractor.ExtractMKVTimecodesThreaded(parameters);
+                break;
+            case ExtractionMode.Cues:
+                extractor.ExtractMKVCuesThreaded(parameters);
+                break;
+            case ExtractionMode.Cue_Sheet:
+                extractor.ExtractMkvCuesheetThreaded(parameters);
+                break;
+            case ExtractionMode.Tags:
+                extractor.ExtractMkvTagsThreaded(parameters);
+                break;
+            case ExtractionMode.Tracks_And_Timecodes:
+                extractor.ExtractMKVSegmentsThreaded(parameters);
+                if (!extractor.Abort) extractor.ExtractMKVTimecodesThreaded(parameters);
+                break;
+            case ExtractionMode.Tracks_And_Cues:
+                extractor.ExtractMKVSegmentsThreaded(parameters);
+                if (!extractor.Abort) extractor.ExtractMKVCuesThreaded(parameters);
+                break;
+            case ExtractionMode.Tracks_And_Cues_And_Timecodes:
+                extractor.ExtractMKVSegmentsThreaded(parameters);
+                if (!extractor.Abort) extractor.ExtractMKVCuesThreaded(parameters);
+                if (!extractor.Abort) extractor.ExtractMKVTimecodesThreaded(parameters);
+                break;
+        }
+    }
+
+    private async Task AddCurrentSelectionToQueueAsync()
+    {
+        if (InputFiles.Count == 0)
+        {
+            StatusText = "请先添加输入文件";
+            return;
+        }
+        if (string.IsNullOrEmpty(MkvToolnixPath))
+        {
+            StatusText = "未配置 MKVToolnix 路径";
+            return;
+        }
+
+        await LoadTracksForFilesAsync(InputFiles);
+
+        var selectedFiles = InputFiles
+            .Select(file => new
+            {
+                File = file,
+                Tracks = file.Tracks.Where(t => t.IsSelected).ToList(),
+            })
+            .Where(item => item.Tracks.Count > 0)
+            .ToList();
+
+        if (selectedFiles.Count == 0)
+        {
+            StatusText = "请勾选至少一个轨道";
+            return;
+        }
+
+        SyncToSettings();
+
+        var chapterType = Enum.TryParse<MkvChapterTypes>(SelectedChapterType, out var ct) ? ct : MkvChapterTypes.XML;
+        var extractionMode = Enum.TryParse<ExtractionMode>(SelectedExtractionMode, out var em) ? em : ExtractionMode.Tracks;
+        var jobsAdded = 0;
+        var trackCount = 0;
+
+        foreach (var selectedFile in selectedFiles)
+        {
+            var inputPath = selectedFile.File.FullPath;
+            var outputDir = ResolveOutputDirectory(inputPath);
 
             if (string.IsNullOrEmpty(outputDir))
             {
                 StatusText = "未设置输出目录";
                 return;
             }
-            Directory.CreateDirectory(outputDir);
 
-            _extractor = new gMKVExtract(MkvToolnixPath);
-            _extractor.MkvExtractProgressUpdated += progress =>
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    ProgressValue = progress;
-                    ProgressText = $"{progress}%";
-                });
-            };
-            _extractor.MkvExtractTrackUpdated += (filename, trackName) =>
-            {
-                Dispatcher.UIThread.Post(() => StatusText = $"正在提取：{trackName}");
-            };
-
-            var segments = selectedTracks
+            var segments = selectedFile.Tracks
                 .Select(t => t.Segment)
                 .Where(s => s is not null)
-                .Cast<gMKVSegment>()
+                .Cast<gMKVToolNix.Segments.gMKVSegment>()
                 .ToList();
-
-            var chapterType = Enum.TryParse<MkvChapterTypes>(SelectedChapterType, out var ct) ? ct : MkvChapterTypes.XML;
-            var extractionMode = Enum.TryParse<ExtractionMode>(SelectedExtractionMode, out var em) ? em : ExtractionMode.Tracks;
 
             var parameters = new gMKVExtractSegmentsParameters
             {
@@ -535,75 +1010,35 @@ public class MainWindowViewModel : INotifyPropertyChanged
                 CueExtractionMode = CuesExtractionMode.NoCues,
                 FilenamePatterns = new gMKVExtractFilenamePatterns
                 {
-                    VideoTrackFilenamePattern = VideoPattern,
-                    AudioTrackFilenamePattern = AudioPattern,
+                    VideoTrackFilenamePattern    = VideoPattern,
+                    AudioTrackFilenamePattern    = AudioPattern,
                     SubtitleTrackFilenamePattern = SubtitlePattern,
-                    ChapterFilenamePattern = ChapterPattern,
-                    AttachmentFilenamePattern = AttachmentPattern,
-                    TagsFilenamePattern = TagsPattern,
+                    ChapterFilenamePattern       = ChapterPattern,
+                    AttachmentFilenamePattern    = AttachmentPattern,
+                    TagsFilenamePattern          = TagsPattern,
                 },
-                OverwriteExistingFile = OverwriteExistingFiles,
-                DisableBomForTextFiles = DisableBomForTextFiles,
-                UseRawExtractionMode = UseRawExtractionMode,
+                ExistingFileHandling     = ResolveExistingFileHandling(),
+                DisableBomForTextFiles   = DisableBomForTextFiles,
+                UseRawExtractionMode     = UseRawExtractionMode,
                 UseFullRawExtractionMode = UseFullRawExtractionMode,
             };
 
-            await Task.Run(() =>
-            {
-                switch (extractionMode)
-                {
-                    case ExtractionMode.Tracks:
-                        _extractor.ExtractMKVSegmentsThreaded(parameters);
-                        break;
-                    case ExtractionMode.Timecodes:
-                        _extractor.ExtractMKVTimecodesThreaded(parameters);
-                        break;
-                    case ExtractionMode.Cues:
-                        _extractor.ExtractMKVCuesThreaded(parameters);
-                        break;
-                    case ExtractionMode.Cue_Sheet:
-                        _extractor.ExtractMkvCuesheetThreaded(parameters);
-                        break;
-                    case ExtractionMode.Tags:
-                        _extractor.ExtractMkvTagsThreaded(parameters);
-                        break;
-                    case ExtractionMode.Tracks_And_Timecodes:
-                        _extractor.ExtractMKVSegmentsThreaded(parameters);
-                        if (!_extractor.Abort) _extractor.ExtractMKVTimecodesThreaded(parameters);
-                        break;
-                    case ExtractionMode.Tracks_And_Cues:
-                        _extractor.ExtractMKVSegmentsThreaded(parameters);
-                        if (!_extractor.Abort) _extractor.ExtractMKVCuesThreaded(parameters);
-                        break;
-                    case ExtractionMode.Tracks_And_Cues_And_Timecodes:
-                        _extractor.ExtractMKVSegmentsThreaded(parameters);
-                        if (!_extractor.Abort) _extractor.ExtractMKVCuesThreaded(parameters);
-                        if (!_extractor.Abort) _extractor.ExtractMKVTimecodesThreaded(parameters);
-                        break;
-                }
-            });
+            var jobItem = new JobItem(
+                fileName:             System.IO.Path.GetFileName(inputPath),
+                trackCount:           selectedFile.Tracks.Count,
+                extractionParameters: parameters,
+                extractionMode:       extractionMode,
+                mkvToolnixPath:       MkvToolnixPath);
 
-            if (_extractor.ThreadedException is not null)
-            {
-                StatusText = $"提取失败：{_extractor.ThreadedException.Message}";
-            }
-            else if (_extractor.Abort)
-            {
-                StatusText = "已中止";
-            }
-            else
-            {
-                StatusText = "提取完成 ✓";
-            }
+            JobsWindowViewModel.Instance.AddJob(jobItem);
+            jobsAdded++;
+            trackCount += selectedFile.Tracks.Count;
         }
-        catch (Exception ex)
-        {
-            StatusText = $"错误：{ex.Message}";
-        }
-        finally
-        {
-            IsExtracting = false;
-        }
+
+        StatusText = $"已加入队列：{jobsAdded} 个文件，{trackCount} 个轨道";
+
+        // 自动打开作业队列窗口
+        ShowJobs();
     }
 
     private void ShowLog()
@@ -622,15 +1057,15 @@ public class MainWindowViewModel : INotifyPropertyChanged
 
     private void ShowJobs()
     {
-        if (_jobsWindow is null || !_jobsWindow.IsVisible)
+        if (_sharedJobsWindow is null || !_sharedJobsWindow.IsVisible)
         {
-            _jobsWindow = new JobsWindow();
-            _jobsWindow.Closed += (_, _) => _jobsWindow = null;
-            _jobsWindow.Show();
+            _sharedJobsWindow ??= new JobsWindow();
+            _sharedJobsWindow.Closed += (_, _) => _sharedJobsWindow = null;
+            _sharedJobsWindow.Show();
         }
         else
         {
-            _jobsWindow.Activate();
+            _sharedJobsWindow.Activate();
         }
     }
 
@@ -638,7 +1073,19 @@ public class MainWindowViewModel : INotifyPropertyChanged
     {
         var owner = GetTopLevel() as Window;
         if (owner is null) return;
-        var win = new OptionsWindow { DataContext = this };
+
+        // 在打开设置窗口前，同步当前状态到 SettingsService
+        SyncToSettings();
+
+        var vm = new OptionsWindowViewModel();
+        var win = new OptionsWindow { DataContext = vm };
+
+        win.Closed += (_, _) =>
+        {
+            // 设置窗口关闭后，从 SettingsService 同步回来
+            SyncFromSettings();
+        };
+
         _ = win.ShowDialog(owner);
     }
 
@@ -653,6 +1100,115 @@ public class MainWindowViewModel : INotifyPropertyChanged
         {
             _extractor.Abort = true;
             _extractor.AbortAll = true;
+        }
+    }
+
+    // ── 输出路径决策逻辑 ────────────────────────────────────────────────────
+
+    /// <summary>
+    /// 根据当前设置策略，解析输入文件对应的输出目录。
+    /// </summary>
+    private string ResolveOutputDirectory(string inputFilePath)
+    {
+        return _outputDirectoryStrategy switch
+        {
+            OutputDirectoryStrategy.SourceDirectory =>
+                Path.GetDirectoryName(inputFilePath) ?? string.Empty,
+            OutputDirectoryStrategy.CustomDirectory =>
+                OutputDirectory,
+            OutputDirectoryStrategy.SubdirectoryPerFile =>
+                Path.Combine(
+                    string.IsNullOrEmpty(OutputDirectory)
+                        ? Path.GetDirectoryName(inputFilePath) ?? string.Empty
+                        : OutputDirectory,
+                    Path.GetFileNameWithoutExtension(inputFilePath)),
+            _ => Path.GetDirectoryName(inputFilePath) ?? string.Empty,
+        };
+    }
+
+    /// <summary>
+    /// 根据覆盖策略解析输出文件路径。返回 null 表示跳过。
+    /// </summary>
+    public static string? ResolveOutputFilePath(string outputPath, OverwriteStrategy strategy)
+    {
+        if (!File.Exists(outputPath) || strategy == OverwriteStrategy.Overwrite)
+            return outputPath;
+
+        if (strategy == OverwriteStrategy.Skip)
+            return null; // null 表示跳过
+
+        // Rename: 添加后缀
+        string dir = Path.GetDirectoryName(outputPath)!;
+        string nameNoExt = Path.GetFileNameWithoutExtension(outputPath);
+        string ext = Path.GetExtension(outputPath);
+        int counter = 1;
+        string newPath;
+        do
+        {
+            newPath = Path.Combine(dir, $"{nameNoExt}_{counter}{ext}");
+            counter++;
+        } while (File.Exists(newPath));
+        return newPath;
+    }
+
+    private gMKVToolNix.ExistingFileHandling ResolveExistingFileHandling()
+    {
+        return SettingsService.Instance.Current.OverwriteStrategy switch
+        {
+            OverwriteStrategy.Overwrite => gMKVToolNix.ExistingFileHandling.Overwrite,
+            OverwriteStrategy.Skip => gMKVToolNix.ExistingFileHandling.Skip,
+            OverwriteStrategy.Rename => gMKVToolNix.ExistingFileHandling.Rename,
+            _ => OverwriteExistingFiles
+                ? gMKVToolNix.ExistingFileHandling.Overwrite
+                : gMKVToolNix.ExistingFileHandling.Rename,
+        };
+    }
+
+    /// <summary>
+    /// 从 SettingsService 同步设置到 ViewModel 属性。
+    /// </summary>
+    public void SyncFromSettings()
+    {
+        var s = SettingsService.Instance.Current;
+        MkvToolnixPath = s.LastMkvToolnixPath;
+        _outputDirectoryStrategy = s.OutputStrategy;
+        OutputDirectory = !string.IsNullOrEmpty(s.CustomOutputDirectory)
+            ? s.CustomOutputDirectory
+            : s.LastOutputDirectory;
+        UseSourceDirectory = s.OutputStrategy == OutputDirectoryStrategy.SourceDirectory;
+        VideoPattern = s.VideoTrackPattern;
+        AudioPattern = s.AudioTrackPattern;
+        SubtitlePattern = s.SubtitleTrackPattern;
+        ChapterPattern = s.ChapterPattern;
+        AttachmentPattern = s.AttachmentPattern;
+        TagsPattern = s.TagsPattern;
+        OverwriteExistingFiles = s.OverwriteStrategy == OverwriteStrategy.Overwrite;
+    }
+
+    /// <summary>
+    /// 将 ViewModel 属性同步回 SettingsService（不保存到磁盘）。
+    /// </summary>
+    public void SyncToSettings()
+    {
+        var s = SettingsService.Instance.Current;
+        s.LastMkvToolnixPath = MkvToolnixPath;
+        s.OutputStrategy = _outputDirectoryStrategy;
+        s.UseSourceDirectory = _outputDirectoryStrategy == OutputDirectoryStrategy.SourceDirectory;
+        s.LastOutputDirectory = OutputDirectory;
+        s.CustomOutputDirectory = OutputDirectory;
+        s.VideoTrackPattern = VideoPattern;
+        s.AudioTrackPattern = AudioPattern;
+        s.SubtitleTrackPattern = SubtitlePattern;
+        s.ChapterPattern = ChapterPattern;
+        s.AttachmentPattern = AttachmentPattern;
+        s.TagsPattern = TagsPattern;
+        if (OverwriteExistingFiles)
+        {
+            s.OverwriteStrategy = OverwriteStrategy.Overwrite;
+        }
+        else if (s.OverwriteStrategy == OverwriteStrategy.Overwrite)
+        {
+            s.OverwriteStrategy = OverwriteStrategy.Rename;
         }
     }
 
@@ -677,16 +1233,56 @@ public class MainWindowViewModel : INotifyPropertyChanged
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop ?? string.Empty));
 }
 
-public class InputFileItem
+public class InputFileItem : INotifyPropertyChanged
 {
     public string FullPath { get; }
     public string DisplayName { get; }
+    public ObservableCollection<TrackItem> Tracks { get; } = new();
+
+    private bool _tracksLoaded;
+    public bool TracksLoaded
+    {
+        get => _tracksLoaded;
+        set
+        {
+            if (_tracksLoaded == value) return;
+            _tracksLoaded = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TracksLoaded)));
+        }
+    }
+
+    private bool _isLoadingTracks;
+    public bool IsLoadingTracks
+    {
+        get => _isLoadingTracks;
+        set
+        {
+            if (_isLoadingTracks == value) return;
+            _isLoadingTracks = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsLoadingTracks)));
+        }
+    }
+
+    private string _tracksSummary = string.Empty;
+    public string TracksSummary
+    {
+        get => _tracksSummary;
+        set
+        {
+            if (_tracksSummary == value) return;
+            _tracksSummary = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TracksSummary)));
+        }
+    }
+
     public InputFileItem(string fullPath)
     {
         FullPath = fullPath;
         DisplayName = Path.GetFileName(fullPath);
     }
     public override string ToString() => DisplayName;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 }
 
 public class TrackItem : INotifyPropertyChanged
@@ -700,6 +1296,7 @@ public class TrackItem : INotifyPropertyChanged
             if (_isSelected == value) return;
             _isSelected = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+            SelectionChanged?.Invoke();
         }
     }
     public string Display { get; set; } = string.Empty;
@@ -708,6 +1305,7 @@ public class TrackItem : INotifyPropertyChanged
     public int TrackNumber { get; set; }
     public int TrackId { get; set; }
     public gMKVToolNix.Segments.gMKVSegment? Segment { get; set; }
+    public Action? SelectionChanged { get; set; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 }

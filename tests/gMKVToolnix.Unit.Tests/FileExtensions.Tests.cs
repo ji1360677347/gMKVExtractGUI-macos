@@ -13,6 +13,13 @@ namespace gMKVToolNix.Unit.Tests
             Assert.AreEqual(expectedFilename, actualFilename);
         }
 
+        private void ActAndAssertGetOutputFilename(string filename, ExistingFileHandling existingFileHandling, string expectedFilename)
+        {
+            string actualFilename = filename.GetOutputFilename(existingFileHandling);
+
+            Assert.AreEqual(expectedFilename, actualFilename);
+        }
+
         [TestMethod]
         public void GetOutputFilename_WithNoOverwrite_ShouldBe_Successful()
         {
@@ -70,6 +77,21 @@ namespace gMKVToolNix.Unit.Tests
             ActAndAssertGetOutputFilename(filename, true, expectedFilename);
             ActAndAssertGetOutputFilename(filename, true, expectedFilename);
             ActAndAssertGetOutputFilename(filename, true, expectedFilename);
+
+            File.Delete("test.txt");
+        }
+
+        [TestMethod]
+        public void GetOutputFilename_WithSkip_ShouldBe_Successful()
+        {
+            string filename = "test.txt";
+            string expectedFilename = filename;
+
+            ActAndAssertGetOutputFilename(filename, ExistingFileHandling.Skip, expectedFilename);
+
+            File.Create(expectedFilename).Dispose();
+
+            ActAndAssertGetOutputFilename(filename, ExistingFileHandling.Skip, null);
 
             File.Delete("test.txt");
         }

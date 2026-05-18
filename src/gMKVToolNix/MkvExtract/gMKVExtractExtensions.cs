@@ -94,6 +94,24 @@ namespace gMKVToolNix.MkvExtract
             , MkvExtractModes argMkvExtractMode
             , MkvChapterTypes argMkvChapterType = MkvChapterTypes.XML)
         {
+            return argSeg.GetOutputFilename(
+                argOutputDirectory,
+                argMKVFile,
+                argFilenamePatterns,
+                argOverwriteExistingFile ? ExistingFileHandling.Overwrite : ExistingFileHandling.Rename,
+                argMkvExtractMode,
+                argMkvChapterType);
+        }
+
+        public static string GetOutputFilename(
+            this gMKVSegment argSeg
+            , string argOutputDirectory
+            , string argMKVFile
+            , gMKVExtractFilenamePatterns argFilenamePatterns
+            , ExistingFileHandling argExistingFileHandling
+            , MkvExtractModes argMkvExtractMode
+            , MkvChapterTypes argMkvChapterType = MkvChapterTypes.XML)
+        {
             string outputFilename = "";
             string outputFileExtension = "";
             string argMkvFilenameNoExt = Path.GetFileNameWithoutExtension(argMKVFile);
@@ -214,7 +232,7 @@ namespace gMKVToolNix.MkvExtract
                     break;
             }
 
-            return outputFilename.GetOutputFilename(argOverwriteExistingFile);
+            return outputFilename.GetOutputFilename(argExistingFileHandling);
         }
 
         private static string GetVideoFileExtensionFromCodecID(this gMKVTrack argTrack)

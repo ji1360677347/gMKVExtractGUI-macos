@@ -2,12 +2,30 @@ using System.IO;
 
 namespace gMKVToolNix
 {
+    public enum ExistingFileHandling
+    {
+        Rename,
+        Overwrite,
+        Skip
+    }
+
     public static class FileExtensions
     {
         public static string GetOutputFilename(this string filename, bool overwriteExisting = false)
         {
+            return filename.GetOutputFilename(
+                overwriteExisting ? ExistingFileHandling.Overwrite : ExistingFileHandling.Rename);
+        }
+
+        public static string GetOutputFilename(this string filename, ExistingFileHandling existingFileHandling)
+        {
             // Check if file already exists
-            while (!overwriteExisting && File.Exists(filename))
+            if (existingFileHandling == ExistingFileHandling.Skip && File.Exists(filename))
+            {
+                return null;
+            }
+
+            while (existingFileHandling == ExistingFileHandling.Rename && File.Exists(filename))
             {
                 string outputFilenameDirectory = Path.GetDirectoryName(filename);
                 string outputFilenameWithoutExtension = Path.GetFileNameWithoutExtension(filename);

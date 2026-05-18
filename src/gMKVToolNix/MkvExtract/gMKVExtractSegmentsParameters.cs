@@ -17,7 +17,12 @@ namespace gMKVToolNix.MkvExtract
         public bool DisableBomForTextFiles { get; set; } = false;
         public bool UseRawExtractionMode { get; set; } = false;
         public bool UseFullRawExtractionMode { get; set; } = false;
-        public bool OverwriteExistingFile { get; set; } = false;
+        public ExistingFileHandling ExistingFileHandling { get; set; } = ExistingFileHandling.Rename;
+        public bool OverwriteExistingFile
+        {
+            get { return ExistingFileHandling == ExistingFileHandling.Overwrite; }
+            set { ExistingFileHandling = value ? ExistingFileHandling.Overwrite : ExistingFileHandling.Rename; }
+        }
 
         public override bool Equals(object oth)
         {
@@ -40,7 +45,7 @@ namespace gMKVToolNix.MkvExtract
                 && DisableBomForTextFiles.Equals(other.DisableBomForTextFiles)
                 && UseRawExtractionMode.Equals(other.UseRawExtractionMode)
                 && UseFullRawExtractionMode.Equals(other.UseFullRawExtractionMode)
-                && OverwriteExistingFile.Equals(other.OverwriteExistingFile)
+                && ExistingFileHandling == other.ExistingFileHandling
             ;
         }
 
@@ -59,7 +64,7 @@ namespace gMKVToolNix.MkvExtract
                 hash = hash * 23 + DisableBomForTextFiles.GetHashCode();
                 hash = hash * 23 + UseRawExtractionMode.GetHashCode();
                 hash = hash * 23 + UseFullRawExtractionMode.GetHashCode();
-                hash = hash * 23 + OverwriteExistingFile.GetHashCode();
+                hash = hash * 23 + ExistingFileHandling.GetHashCode();
                 return hash;
             }
         }

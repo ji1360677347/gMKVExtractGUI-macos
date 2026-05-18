@@ -3,12 +3,13 @@
         xmlns:vm="clr-namespace:gMKVToolNix.UI.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="780" d:DesignHeight="640"
+        mc:Ignorable="d" d:DesignWidth="820" d:DesignHeight="720"
         x:Class="gMKVToolNix.UI.Views.OptionsWindow"
-        x:DataType="vm:MainWindowViewModel"
+        x:Name="RootWindow"
+        x:DataType="vm:OptionsWindowViewModel"
         Title="设置 · gMKVExtractGUI"
-        Width="780" Height="640"
-        MinWidth="640" MinHeight="500"
+        Width="820" Height="720"
+        MinWidth="700" MinHeight="600"
         WindowStartupLocation="CenterOwner"
         Background="Transparent"
         TransparencyLevelHint="AcrylicBlur,Mica,Blur,Transparent"
@@ -32,106 +33,188 @@
     <ScrollViewer>
       <Grid Margin="20" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
 
+        <!-- 标题 -->
         <StackPanel Grid.Row="0" Orientation="Vertical" Spacing="2" Margin="0,12,0,16">
-          <TextBlock Classes="h1" Text="设置" />
-          <TextBlock Classes="subtitle" Text="所有改动立即对主窗口生效；持久化将在后续轮次完成" />
+          <TextBlock Classes="h1" Text="输出设置" />
+          <TextBlock Classes="subtitle" Text="配置输出目录策略、文件名模板和覆盖行为" />
         </StackPanel>
 
-        <!-- MKVToolnix 路径 -->
+        <!-- ═══════════ 1a. 输出目录策略 ═══════════ -->
         <Border Grid.Row="1" Classes="glass" Margin="0,0,0,12">
           <StackPanel Orientation="Vertical" Spacing="8">
-            <TextBlock Classes="h2" Text="MKVToolnix" />
-            <TextBox Classes="macaron"
-                     Text="{Binding MkvToolnixPath}"
-                     Watermark="（点击右侧自动探测，或浏览选择）" />
-            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-              <Button Classes="macaron sky" Content="浏览…"
-                      Command="{Binding BrowseMkvToolnixPathCommand}" />
-              <Button Classes="macaron mint" Content="自动探测"
-                      Command="{Binding AutoDetectMkvToolnixCommand}" />
+            <TextBlock Classes="h2" Text="输出目录策略" />
+
+            <!-- 源文件目录 -->
+            <RadioButton Content="输出到源文件所在目录"
+                         IsChecked="{Binding IsSourceDirectory}"
+                         Foreground="{StaticResource MacaronTextBrush}"
+                         FontWeight="SemiBold" />
+            <TextBlock Classes="subtitle" Margin="28,0,0,0"
+                       Text="提取文件与源 MKV 放在同一个文件夹" />
+
+            <!-- 统一输出目录 -->
+            <RadioButton Content="统一输出目录"
+                         IsChecked="{Binding IsCustomDirectory}"
+                         Foreground="{StaticResource MacaronTextBrush}"
+                         FontWeight="SemiBold" Margin="0,4,0,0" />
+            <TextBlock Classes="subtitle" Margin="28,0,0,0"
+                       Text="所有提取文件统一输出到指定目录" />
+
+            <!-- 按文件名子目录 -->
+            <RadioButton Content="按文件名创建子目录"
+                         IsChecked="{Binding IsSubdirectoryPerFile}"
+                         Foreground="{StaticResource MacaronTextBrush}"
+                         FontWeight="SemiBold" Margin="0,4,0,0" />
+            <TextBlock Classes="subtitle" Margin="28,0,0,0"
+                       Text="每个 MKV 文件在输出目录下创建同名子文件夹" />
+
+            <!-- 目录选择器 -->
+            <Grid ColumnDefinitions="*,Auto" Margin="28,8,0,0"
+                  IsVisible="{Binding ShowCustomDirectoryPicker}">
+              <TextBox Grid.Column="0" Classes="macaron"
+                       Text="{Binding CustomOutputDirectory}"
+                       Watermark="选择输出目录…"
+                       Margin="0,0,8,0" />
+              <Button Grid.Column="1" Classes="macaron sky" Content="浏览…"
+                      Command="{Binding BrowseDirectoryCommand}" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <!-- ═══════════ 1b. 文件名模板编辑器 ═══════════ -->
+        <Border Grid.Row="2" Classes="glass" Margin="0,0,0,12">
+          <StackPanel Orientation="Vertical" Spacing="8">
+            <TextBlock Classes="h2" Text="文件名模板" />
+
+            <!-- 模板 TabControl -->
+            <TabControl Name="TabControl"
+                        SelectedIndex="{Binding SelectedPatternTab}"
+                        Background="Transparent"
+                        Padding="0">
+              <TabItem Header="视频">
+                <TextBox Classes="macaron" Name="VideoPatternBox"
+                         Text="{Binding VideoTrackPattern}" Margin="0,8,0,0" />
+              </TabItem>
+              <TabItem Header="音频">
+                <TextBox Classes="macaron" Name="AudioPatternBox"
+                         Text="{Binding AudioTrackPattern}" Margin="0,8,0,0" />
+              </TabItem>
+              <TabItem Header="字幕">
+                <TextBox Classes="macaron" Name="SubtitlePatternBox"
+                         Text="{Binding SubtitleTrackPattern}" Margin="0,8,0,0" />
+              </TabItem>
+              <TabItem Header="章节">
+                <TextBox Classes="macaron" Name="ChapterPatternBox"
+                         Text="{Binding ChapterPattern}" Margin="0,8,0,0" />
+              </TabItem>
+              <TabItem Header="附件">
+                <TextBox Classes="macaron" Name="AttachmentPatternBox"
+                         Text="{Binding AttachmentPattern}" Margin="0,8,0,0" />
+              </TabItem>
+              <TabItem Header="标签">
+                <TextBox Classes="macaron" Name="TagsPatternBox"
+                         Text="{Binding TagsPattern}" Margin="0,8,0,0" />
+              </TabItem>
+            </TabControl>
+
+            <!-- 可用占位符 -->
+            <TextBlock Classes="h2" Text="可用占位符" Margin="0,4,0,0" />
+            <ItemsControl ItemsSource="{Binding PlaceholderGroups}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:PlaceholderGroup">
+                  <StackPanel Orientation="Vertical" Spacing="4" Margin="0,0,0,8">
+                    <TextBlock Text="{Binding GroupName}" FontWeight="SemiBold"
+                               FontSize="12"
+                               Foreground="{StaticResource MacaronTextSoftBrush}" />
+                    <ItemsControl ItemsSource="{Binding Placeholders}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:PlaceholderInfo">
+                          <Button Classes="macaron" Margin="0,0,6,4"
+                                  Padding="8,4"
+                                  Content="{Binding Token}"
+                                  ToolTip.Tip="{Binding Description}"
+                                  Click="OnPlaceholderClick" />
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- 实时预览 -->
+            <Border Background="#FCFCFE" CornerRadius="8"
+                    BorderBrush="{StaticResource MacaronBorderBrush}"
+                    BorderThickness="1" Padding="12,8" Margin="0,4,0,0">
+              <StackPanel Orientation="Vertical" Spacing="4">
+                <TextBlock Text="预览" FontWeight="SemiBold" FontSize="12"
+                           Foreground="{StaticResource MacaronTextSoftBrush}" />
+                <TextBlock Text="{Binding PatternPreview}"
+                           FontFamily="Consolas,Menlo,monospace"
+                           FontSize="13"
+                           Foreground="{StaticResource MacaronTextBrush}" />
+              </StackPanel>
+            </Border>
+
+            <!-- 预设按钮 -->
+            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+              <TextBlock Text="预设：" VerticalAlignment="Center"
+                         Foreground="{StaticResource MacaronTextSoftBrush}"
+                         FontSize="12" />
+              <Button Classes="macaron" Content="紧凑" Padding="12,4"
+                      Command="{Binding ApplyPresetCommand}" CommandParameter="compact" />
+              <Button Classes="macaron" Content="详细" Padding="12,4"
+                      Command="{Binding ApplyPresetCommand}" CommandParameter="detailed" />
+              <Button Classes="macaron" Content="兼容" Padding="12,4"
+                      Command="{Binding ApplyPresetCommand}" CommandParameter="compatible" />
             </StackPanel>
           </StackPanel>
         </Border>
 
-        <!-- 文件名模板 -->
-        <Border Grid.Row="2" Classes="glass" Margin="0,0,0,12">
-          <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                ColumnDefinitions="120,*">
-            <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Classes="h2"
-                       Text="文件名模板" Margin="0,0,0,4" />
-            <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Classes="subtitle"
-                       Text="可用占位符：{FilenameNoExt}、{TrackNumber}、{Language}、{TrackName}、{CodecID}、{EffectiveDelay} 等"
-                       Margin="0,0,0,8" />
-
-            <TextBlock Grid.Row="2" Grid.Column="0" Text="视频"
-                       VerticalAlignment="Center" Margin="0,2"
-                       Foreground="{StaticResource MacaronTextBrush}" />
-            <TextBox Grid.Row="2" Grid.Column="1" Classes="macaron"
-                     Text="{Binding VideoPattern}" Margin="0,2" />
-
-            <TextBlock Grid.Row="3" Grid.Column="0" Text="音频"
-                       VerticalAlignment="Center" Margin="0,2"
-                       Foreground="{StaticResource MacaronTextBrush}" />
-            <TextBox Grid.Row="3" Grid.Column="1" Classes="macaron"
-                     Text="{Binding AudioPattern}" Margin="0,2" />
-
-            <TextBlock Grid.Row="4" Grid.Column="0" Text="字幕"
-                       VerticalAlignment="Center" Margin="0,2"
-                       Foreground="{StaticResource MacaronTextBrush}" />
-            <TextBox Grid.Row="4" Grid.Column="1" Classes="macaron"
-                     Text="{Binding SubtitlePattern}" Margin="0,2" />
-
-            <TextBlock Grid.Row="5" Grid.Column="0" Text="章节"
-                       VerticalAlignment="Center" Margin="0,2"
-                       Foreground="{StaticResource MacaronTextBrush}" />
-            <TextBox Grid.Row="5" Grid.Column="1" Classes="macaron"
-                     Text="{Binding ChapterPattern}" Margin="0,2" />
-
-            <TextBlock Grid.Row="6" Grid.Column="0" Text="附件"
-                       VerticalAlignment="Center" Margin="0,2"
-                       Foreground="{StaticResource MacaronTextBrush}" />
-            <TextBox Grid.Row="6" Grid.Column="1" Classes="macaron"
-                     Text="{Binding AttachmentPattern}" Margin="0,2" />
-
-            <TextBlock Grid.Row="7" Grid.Column="0" Text="标签"
-                       VerticalAlignment="Center" Margin="0,2"
-                       Foreground="{StaticResource MacaronTextBrush}" />
-            <TextBox Grid.Row="7" Grid.Column="1" Classes="macaron"
-                     Text="{Binding TagsPattern}" Margin="0,2" />
-          </Grid>
-        </Border>
-
-        <!-- 提取选项 -->
+        <!-- ═══════════ 1c. 覆盖策略 ═══════════ -->
         <Border Grid.Row="3" Classes="glass" Margin="0,0,0,12">
           <StackPanel Orientation="Vertical" Spacing="8">
-            <TextBlock Classes="h2" Text="提取选项" />
-            <CheckBox Content="文本字幕不写入 BOM"
-                      IsChecked="{Binding DisableBomForTextFiles}"
-                      Foreground="{StaticResource MacaronTextBrush}" />
-            <CheckBox Content="使用 Raw 模式（mkvextract --raw）"
-                      IsChecked="{Binding UseRawExtractionMode}"
-                      Foreground="{StaticResource MacaronTextBrush}" />
-            <CheckBox Content="使用 Full Raw 模式（mkvextract --fullraw）"
-                      IsChecked="{Binding UseFullRawExtractionMode}"
-                      Foreground="{StaticResource MacaronTextBrush}" />
-            <CheckBox Content="拖入时追加（不替换已有列表）"
-                      IsChecked="{Binding AppendOnDragAndDrop}"
-                      Foreground="{StaticResource MacaronTextBrush}" />
-            <CheckBox Content="覆盖已存在文件"
-                      IsChecked="{Binding OverwriteExistingFiles}"
-                      Foreground="{StaticResource MacaronTextBrush}" />
-            <CheckBox Content="提取完成后弹窗"
-                      IsChecked="{Binding ShowPopup}"
-                      Foreground="{StaticResource MacaronTextBrush}" />
+            <TextBlock Classes="h2" Text="覆盖策略" />
+
+            <RadioButton Content="覆盖已有文件"
+                         IsChecked="{Binding IsOverwriteOverwrite}"
+                         Foreground="{StaticResource MacaronTextBrush}"
+                         FontWeight="SemiBold" />
+            <TextBlock Classes="subtitle" Margin="28,0,0,0"
+                       Text="若目标文件已存在，直接覆盖" />
+
+            <RadioButton Content="跳过已存在文件"
+                         IsChecked="{Binding IsOverwriteSkip}"
+                         Foreground="{StaticResource MacaronTextBrush}"
+                         FontWeight="SemiBold" Margin="0,4,0,0" />
+            <TextBlock Classes="subtitle" Margin="28,0,0,0"
+                       Text="若目标文件已存在，跳过不提取" />
+
+            <RadioButton Content="自动重命名"
+                         IsChecked="{Binding IsOverwriteRename}"
+                         Foreground="{StaticResource MacaronTextBrush}"
+                         FontWeight="SemiBold" Margin="0,4,0,0" />
+            <TextBlock Classes="subtitle" Margin="28,0,0,0"
+                       Text="若目标文件已存在，自动添加 _1、_2 后缀避免冲突" />
           </StackPanel>
         </Border>
 
-        <!-- 关闭按钮 -->
+        <!-- ═══════════ 1d. 底部按钮 ═══════════ -->
         <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="8"
                     HorizontalAlignment="Right" Margin="0,4,0,12">
-          <Button Classes="macaron mint" Content="完成"
-                  Click="OnCloseClick" />
+          <Button Classes="macaron" Content="恢复默认"
+                  Command="{Binding ResetDefaultsCommand}" />
+          <Button Classes="macaron" Content="取消"
+                  Command="{Binding CancelCommand}" />
+          <Button Classes="macaron mint" Content="保存"
+                  Command="{Binding SaveCommand}" />
         </StackPanel>
+
       </Grid>
     </ScrollViewer>
   </Panel>
