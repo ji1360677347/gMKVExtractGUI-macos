@@ -28,7 +28,7 @@
       </ExperimentalAcrylicBorder.Material>
     </ExperimentalAcrylicBorder>
 
-    <Rectangle Fill="{StaticResource MacaronWindowBackground}" Opacity="0.35" IsHitTestVisible="False" />
+    <Rectangle Fill="{DynamicResource MacaronWindowBackground}" Opacity="0.35" IsHitTestVisible="False" />
 
     <ScrollViewer>
       <Grid Margin="20" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
@@ -47,7 +47,7 @@
             <!-- 源文件目录 -->
             <RadioButton Content="输出到源文件所在目录"
                          IsChecked="{Binding IsSourceDirectory}"
-                         Foreground="{StaticResource MacaronTextBrush}"
+                         Foreground="{DynamicResource MacaronTextBrush}"
                          FontWeight="SemiBold" />
             <TextBlock Classes="subtitle" Margin="28,0,0,0"
                        Text="提取文件与源 MKV 放在同一个文件夹" />
@@ -55,7 +55,7 @@
             <!-- 统一输出目录 -->
             <RadioButton Content="统一输出目录"
                          IsChecked="{Binding IsCustomDirectory}"
-                         Foreground="{StaticResource MacaronTextBrush}"
+                         Foreground="{DynamicResource MacaronTextBrush}"
                          FontWeight="SemiBold" Margin="0,4,0,0" />
             <TextBlock Classes="subtitle" Margin="28,0,0,0"
                        Text="所有提取文件统一输出到指定目录" />
@@ -63,7 +63,7 @@
             <!-- 按文件名子目录 -->
             <RadioButton Content="按文件名创建子目录"
                          IsChecked="{Binding IsSubdirectoryPerFile}"
-                         Foreground="{StaticResource MacaronTextBrush}"
+                         Foreground="{DynamicResource MacaronTextBrush}"
                          FontWeight="SemiBold" Margin="0,4,0,0" />
             <TextBlock Classes="subtitle" Margin="28,0,0,0"
                        Text="每个 MKV 文件在输出目录下创建同名子文件夹" />
@@ -125,7 +125,7 @@
                   <StackPanel Orientation="Vertical" Spacing="4" Margin="0,0,0,8">
                     <TextBlock Text="{Binding GroupName}" FontWeight="SemiBold"
                                FontSize="12"
-                               Foreground="{StaticResource MacaronTextSoftBrush}" />
+                               Foreground="{DynamicResource MacaronTextSoftBrush}" />
                     <ItemsControl ItemsSource="{Binding Placeholders}">
                       <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -148,23 +148,23 @@
             </ItemsControl>
 
             <!-- 实时预览 -->
-            <Border Background="#FCFCFE" CornerRadius="8"
-                    BorderBrush="{StaticResource MacaronBorderBrush}"
+            <Border Background="{DynamicResource MacaronPreviewBrush}" CornerRadius="8"
+                    BorderBrush="{DynamicResource MacaronBorderBrush}"
                     BorderThickness="1" Padding="12,8" Margin="0,4,0,0">
               <StackPanel Orientation="Vertical" Spacing="4">
                 <TextBlock Text="预览" FontWeight="SemiBold" FontSize="12"
-                           Foreground="{StaticResource MacaronTextSoftBrush}" />
+                           Foreground="{DynamicResource MacaronTextSoftBrush}" />
                 <TextBlock Text="{Binding PatternPreview}"
                            FontFamily="Consolas,Menlo,monospace"
                            FontSize="13"
-                           Foreground="{StaticResource MacaronTextBrush}" />
+                           Foreground="{DynamicResource MacaronTextBrush}" />
               </StackPanel>
             </Border>
 
             <!-- 预设按钮 -->
             <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
               <TextBlock Text="预设：" VerticalAlignment="Center"
-                         Foreground="{StaticResource MacaronTextSoftBrush}"
+                         Foreground="{DynamicResource MacaronTextSoftBrush}"
                          FontSize="12" />
               <Button Classes="macaron" Content="紧凑" Padding="12,4"
                       Command="{Binding ApplyPresetCommand}" CommandParameter="compact" />
@@ -183,21 +183,21 @@
 
             <RadioButton Content="覆盖已有文件"
                          IsChecked="{Binding IsOverwriteOverwrite}"
-                         Foreground="{StaticResource MacaronTextBrush}"
+                         Foreground="{DynamicResource MacaronTextBrush}"
                          FontWeight="SemiBold" />
             <TextBlock Classes="subtitle" Margin="28,0,0,0"
                        Text="若目标文件已存在，直接覆盖" />
 
             <RadioButton Content="跳过已存在文件"
                          IsChecked="{Binding IsOverwriteSkip}"
-                         Foreground="{StaticResource MacaronTextBrush}"
+                         Foreground="{DynamicResource MacaronTextBrush}"
                          FontWeight="SemiBold" Margin="0,4,0,0" />
             <TextBlock Classes="subtitle" Margin="28,0,0,0"
                        Text="若目标文件已存在，跳过不提取" />
 
             <RadioButton Content="自动重命名"
                          IsChecked="{Binding IsOverwriteRename}"
-                         Foreground="{StaticResource MacaronTextBrush}"
+                         Foreground="{DynamicResource MacaronTextBrush}"
                          FontWeight="SemiBold" Margin="0,4,0,0" />
             <TextBlock Classes="subtitle" Margin="28,0,0,0"
                        Text="若目标文件已存在，自动添加 _1、_2 后缀避免冲突" />

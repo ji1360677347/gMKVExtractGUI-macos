@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Styling;
 using gMKVToolNix.UI.ViewModels;
 
 namespace gMKVToolNix.UI.Views;
@@ -127,6 +129,7 @@ public partial class MainWindow : Window
             fileList += $"{Environment.NewLine}…另有 {paths.Count - shownFiles.Count} 个文件";
         }
 
+        var palette = GetDialogPalette();
         var dialog = new Window
         {
             Title = "不支持的文件格式",
@@ -135,7 +138,7 @@ public partial class MainWindow : Window
             MinHeight = 220,
             CanResize = false,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Background = Brushes.White,
+            Background = palette.Background,
         };
 
         dialog.Content = new StackPanel
@@ -149,18 +152,18 @@ public partial class MainWindow : Window
                     Text = "已跳过不支持的文件",
                     FontSize = 18,
                     FontWeight = FontWeight.SemiBold,
-                    Foreground = new SolidColorBrush(Color.FromRgb(0x4A, 0x4A, 0x5A)),
+                    Foreground = palette.Text,
                 },
                 new TextBlock
                 {
                     Text = "仅支持 Matroska/WebM 文件：.mkv、.mka、.mks、.webm",
                     TextWrapping = TextWrapping.Wrap,
-                    Foreground = new SolidColorBrush(Color.FromRgb(0x78, 0x78, 0x8A)),
+                    Foreground = palette.TextSoft,
                 },
                 new Border
                 {
-                    Background = new SolidColorBrush(Color.FromRgb(0xFC, 0xFC, 0xFE)),
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(0xDC, 0xC8, 0xDA)),
+                    Background = palette.Panel,
+                    BorderBrush = palette.Border,
                     BorderThickness = new Avalonia.Thickness(1),
                     CornerRadius = new Avalonia.CornerRadius(8),
                     Padding = new Avalonia.Thickness(12, 10),
@@ -168,7 +171,7 @@ public partial class MainWindow : Window
                     {
                         Text = fileList,
                         TextWrapping = TextWrapping.Wrap,
-                        Foreground = new SolidColorBrush(Color.FromRgb(0x4A, 0x4A, 0x5A)),
+                        Foreground = palette.Text,
                     },
                 },
                 CreateCloseDialogButton(dialog),
@@ -180,6 +183,7 @@ public partial class MainWindow : Window
 
     private async Task ShowExtractionCompletedDialogAsync(int fileCount, int trackCount)
     {
+        var palette = GetDialogPalette();
         var dialog = new Window
         {
             Title = "提取完成",
@@ -188,7 +192,7 @@ public partial class MainWindow : Window
             MinHeight = 180,
             CanResize = false,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Background = Brushes.White,
+            Background = palette.Background,
         };
 
         dialog.Content = new StackPanel
@@ -202,13 +206,13 @@ public partial class MainWindow : Window
                     Text = "提取完成",
                     FontSize = 18,
                     FontWeight = FontWeight.SemiBold,
-                    Foreground = new SolidColorBrush(Color.FromRgb(0x4A, 0x4A, 0x5A)),
+                    Foreground = palette.Text,
                 },
                 new TextBlock
                 {
                     Text = $"已成功提取 {fileCount} 个文件、{trackCount} 个轨道。",
                     TextWrapping = TextWrapping.Wrap,
-                    Foreground = new SolidColorBrush(Color.FromRgb(0x78, 0x78, 0x8A)),
+                    Foreground = palette.TextSoft,
                 },
                 CreateCloseDialogButton(dialog),
             },
@@ -234,4 +238,29 @@ public partial class MainWindow : Window
 
         return button;
     }
+
+    private static DialogPalette GetDialogPalette()
+    {
+        var isDark = Application.Current?.ActualThemeVariant == ThemeVariant.Dark;
+        return isDark
+            ? new DialogPalette(
+                new SolidColorBrush(Color.FromRgb(0x1D, 0x1A, 0x25)),
+                new SolidColorBrush(Color.FromRgb(0x26, 0x22, 0x30)),
+                new SolidColorBrush(Color.FromRgb(0xF3, 0xEF, 0xF7)),
+                new SolidColorBrush(Color.FromRgb(0xB8, 0xAF, 0xC6)),
+                new SolidColorBrush(Color.FromRgb(0x6A, 0x59, 0x73)))
+            : new DialogPalette(
+                Brushes.White,
+                new SolidColorBrush(Color.FromRgb(0xFC, 0xFC, 0xFE)),
+                new SolidColorBrush(Color.FromRgb(0x4A, 0x4A, 0x5A)),
+                new SolidColorBrush(Color.FromRgb(0x78, 0x78, 0x8A)),
+                new SolidColorBrush(Color.FromRgb(0xDC, 0xC8, 0xDA)));
+    }
+
+    private sealed record DialogPalette(
+        IBrush Background,
+        IBrush Panel,
+        IBrush Text,
+        IBrush TextSoft,
+        IBrush Border);
 }

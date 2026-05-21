@@ -26,7 +26,7 @@
       </ExperimentalAcrylicBorder.Material>
     </ExperimentalAcrylicBorder>
 
-    <Rectangle Fill="{StaticResource MacaronWindowBackground}" Opacity="0.35" IsHitTestVisible="False" />
+    <Rectangle Fill="{DynamicResource MacaronWindowBackground}" Opacity="0.35" IsHitTestVisible="False" />
 
     <Grid Margin="20" RowDefinitions="Auto,*,Auto">
 
@@ -38,7 +38,7 @@
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
           <CheckBox Content="自动滚动"
                     IsChecked="{Binding AutoScroll}"
-                    Foreground="{StaticResource MacaronTextBrush}" />
+                    Foreground="{DynamicResource MacaronTextBrush}" />
           <Button Classes="macaron lavender" Content="复制全部"
                   Command="{Binding CopyAllCommand}" />
           <Button Classes="macaron sky" Content="保存…"
@@ -58,7 +58,7 @@
                                FontFamily="Menlo, Monaco, Consolas, monospace"
                                FontSize="12"
                                Padding="12"
-                               Foreground="{StaticResource MacaronTextBrush}"
+                               Foreground="{DynamicResource MacaronTextBrush}"
                                TextWrapping="Wrap" />
         </ScrollViewer>
       </Border>

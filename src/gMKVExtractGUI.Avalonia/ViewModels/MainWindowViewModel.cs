@@ -107,6 +107,21 @@ public class MainWindowViewModel : INotifyPropertyChanged
         set => SetField(ref _showPopup, value);
     }
 
+    private bool _useDarkTheme;
+    public bool UseDarkTheme
+    {
+        get => _useDarkTheme;
+        set
+        {
+            if (SetField(ref _useDarkTheme, value))
+            {
+                OnPropertyChanged(nameof(ThemeToggleText));
+            }
+        }
+    }
+
+    public string ThemeToggleText => UseDarkTheme ? "亮色" : "暗色";
+
     // ========== 文件名 pattern（供 Options 窗口编辑） ==========
     private string _videoPattern = "{FilenameNoExt}_track{TrackNumber}_[{Language}]";
     public string VideoPattern { get => _videoPattern; set => SetField(ref _videoPattern, value); }
@@ -275,6 +290,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
     public ICommand ShowLogCommand { get; }
     public ICommand ShowJobsCommand { get; }
     public ICommand ShowOptionsCommand { get; }
+    public ICommand ToggleThemeCommand { get; }
     public ICommand CheckAllTracksCommand { get; }
     public ICommand UncheckAllTracksCommand { get; }
     public ICommand CheckVideoTracksCommand { get; }
@@ -324,6 +340,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
         ShowLogCommand = new RelayCommand(ShowLog);
         ShowJobsCommand = new RelayCommand(ShowJobs);
         ShowOptionsCommand = new RelayCommand(ShowOptions);
+        ToggleThemeCommand = new RelayCommand(ToggleTheme);
         CheckAllTracksCommand = new RelayCommand(() => SetTracksChecked(_ => true, true));
         UncheckAllTracksCommand = new RelayCommand(() => SetTracksChecked(_ => true, false));
         CheckVideoTracksCommand = new RelayCommand(() => SetTracksChecked(IsVideoTrack, true));
@@ -1089,6 +1106,15 @@ public class MainWindowViewModel : INotifyPropertyChanged
         _ = win.ShowDialog(owner);
     }
 
+    private void ToggleTheme()
+    {
+        UseDarkTheme = !UseDarkTheme;
+        SettingsService.Instance.Current.UseDarkTheme = UseDarkTheme;
+        SettingsService.Instance.Save();
+        ThemeService.Apply(UseDarkTheme);
+        StatusText = UseDarkTheme ? "已切换为暗色主题" : "已切换为亮色主题";
+    }
+
     private void Abort()
     {
         if (_extractor is not null) _extractor.Abort = true;
@@ -1183,6 +1209,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
         AttachmentPattern = s.AttachmentPattern;
         TagsPattern = s.TagsPattern;
         OverwriteExistingFiles = s.OverwriteStrategy == OverwriteStrategy.Overwrite;
+        UseDarkTheme = s.UseDarkTheme;
     }
 
     /// <summary>
@@ -1202,6 +1229,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
         s.ChapterPattern = ChapterPattern;
         s.AttachmentPattern = AttachmentPattern;
         s.TagsPattern = TagsPattern;
+        s.UseDarkTheme = UseDarkTheme;
         if (OverwriteExistingFiles)
         {
             s.OverwriteStrategy = OverwriteStrategy.Overwrite;

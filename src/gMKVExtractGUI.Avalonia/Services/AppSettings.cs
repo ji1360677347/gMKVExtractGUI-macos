@@ -97,4 +97,9 @@ public class AppSettings
 
     /// <summary>是否默认启用批量模式</summary>
     public bool AutoBatchMode { get; set; } = true;
+
+    // ── 外观 ──────────────────────────────────────────────────────────────────
+
+    /// <summary>是否使用暗色主题</summary>
+    public bool UseDarkTheme { get; set; }
 }

@@ -17,6 +17,7 @@ public partial class App : Application
     {
         // 应用启动时加载持久化设置
         SettingsService.Instance.Load();
+        ThemeService.ApplyCurrentTheme();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

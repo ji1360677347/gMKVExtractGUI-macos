@@ -33,7 +33,7 @@
     </ExperimentalAcrylicBorder>
 
     <!-- 上层渐变 -->
-    <Rectangle Fill="{StaticResource MacaronWindowBackground}" Opacity="0.45" IsHitTestVisible="False" />
+    <Rectangle Fill="{DynamicResource MacaronWindowBackground}" Opacity="0.45" IsHitTestVisible="False" />
 
     <Grid Margin="20" RowDefinitions="Auto,Auto,*,Auto,Auto">
 
@@ -45,6 +45,7 @@
                      Text="马卡龙版 · 拖入文件到任意位置即可加载" />
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Classes="macaron" Content="{Binding ThemeToggleText}" Command="{Binding ToggleThemeCommand}" />
           <Button Classes="macaron sky" Content="日志" Command="{Binding ShowLogCommand}" />
           <Button Classes="macaron lavender" Content="作业" Command="{Binding ShowJobsCommand}" />
           <Button Classes="macaron lemon" Content="设置" Command="{Binding ShowOptionsCommand}" />
@@ -120,13 +121,13 @@
             <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="18" Margin="0,0,0,8">
               <CheckBox Content="拖入时追加（不替换已有列表）"
                         IsChecked="{Binding AppendOnDragAndDrop}"
-                        Foreground="{StaticResource MacaronTextBrush}" />
+                        Foreground="{DynamicResource MacaronTextBrush}" />
               <CheckBox Content="覆盖已存在文件"
                         IsChecked="{Binding OverwriteExistingFiles}"
-                        Foreground="{StaticResource MacaronTextBrush}" />
+                        Foreground="{DynamicResource MacaronTextBrush}" />
               <CheckBox Content="禁用提示"
                         IsChecked="{Binding DisableTooltips}"
-                        Foreground="{StaticResource MacaronTextBrush}" />
+                        Foreground="{DynamicResource MacaronTextBrush}" />
             </StackPanel>
 
             <Border Grid.Row="2"
@@ -164,19 +165,19 @@
                           <TextBlock Grid.Column="0"
                                      Text="{Binding DisplayName}"
                                      ToolTip.Tip="{Binding FullPath}"
-                                     Foreground="{StaticResource MacaronTextBrush}"
+                                     Foreground="{DynamicResource MacaronTextBrush}"
                                      FontWeight="SemiBold"
                                      TextTrimming="CharacterEllipsis" />
                           <TextBlock Grid.Column="1"
                                      Text="{Binding TracksSummary}"
-                                     Foreground="{StaticResource MacaronTextSoftBrush}"
+                                     Foreground="{DynamicResource MacaronTextSoftBrush}"
                                      FontSize="12"
                                      Margin="12,0,0,0"
                                      VerticalAlignment="Center" />
                         </Grid>
                         <TextBlock Text="正在解析轨道…"
                                    IsVisible="{Binding IsLoadingTracks}"
-                                   Foreground="{StaticResource MacaronTextSoftBrush}"
+                                   Foreground="{DynamicResource MacaronTextSoftBrush}"
                                    FontSize="12"
                                    Margin="18,0,0,0" />
                         <ItemsControl ItemsSource="{Binding Tracks}">
@@ -186,7 +187,7 @@
                                 <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected}" />
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding TypeLabel}"
-                                           Foreground="{StaticResource MacaronTextSoftBrush}"
+                                           Foreground="{DynamicResource MacaronTextSoftBrush}"
                                            FontSize="12"
                                            MinWidth="34"
                                            Margin="6,0,8,0"
@@ -194,7 +195,7 @@
                                 <TextBlock Grid.Column="2"
                                            Text="{Binding Display}"
                                            VerticalAlignment="Center"
-                                           Foreground="{StaticResource MacaronTextBrush}"
+                                           Foreground="{DynamicResource MacaronTextBrush}"
                                            TextTrimming="CharacterEllipsis" />
                               </Grid>
                             </DataTemplate>
@@ -230,7 +231,7 @@
                    Watermark="（使用源目录）" Margin="0,0,8,0" />
           <CheckBox Grid.Column="2" Content="使用源"
                     IsChecked="{Binding UseSourceDirectory}"
-                    Foreground="{StaticResource MacaronTextBrush}"
+                    Foreground="{DynamicResource MacaronTextBrush}"
                     VerticalAlignment="Center" Margin="0,0,8,0" />
           <Button Grid.Column="3" Classes="macaron sky" Content="浏览"
                   Command="{Binding BrowseOutputCommand}" />
@@ -243,12 +244,12 @@
           <!-- 第一行：选项 -->
           <CheckBox Grid.Row="0" Grid.Column="0" Content="提取完成弹窗"
                     IsChecked="{Binding ShowPopup}"
-                    Foreground="{StaticResource MacaronTextBrush}"
+                    Foreground="{DynamicResource MacaronTextBrush}"
                     VerticalAlignment="Center" Margin="0,0,16,0" />
 
           <TextBlock Grid.Row="0" Grid.Column="1" Text="章节："
                      VerticalAlignment="Center" Margin="0,0,4,0"
-                     Foreground="{StaticResource MacaronTextBrush}" />
+                     Foreground="{DynamicResource MacaronTextBrush}" />
           <ComboBox Grid.Row="0" Grid.Column="2"
                     ItemsSource="{Binding ChapterTypes}"
                     SelectedItem="{Binding SelectedChapterType}"
@@ -256,7 +257,7 @@
 
           <TextBlock Grid.Row="0" Grid.Column="3" Text="提取模式："
                      VerticalAlignment="Center" Margin="0,0,4,0"
-                     Foreground="{StaticResource MacaronTextBrush}" />
+                     Foreground="{DynamicResource MacaronTextBrush}" />
           <ComboBox Grid.Row="0" Grid.Column="4"
                     ItemsSource="{Binding ExtractionModes}"
                     SelectedItem="{Binding SelectedExtractionMode}"
@@ -286,7 +287,7 @@
                          Minimum="0" Maximum="100"
                          IsVisible="{Binding IsExtracting}"
                          Height="10" Margin="0,0,12,0"
-                         Foreground="{StaticResource MacaronPinkBrush}" />
+                         Foreground="{DynamicResource MacaronPinkBrush}" />
             <TextBlock Grid.Column="0" Classes="subtitle"
                        Text="{Binding StatusText}"
                        IsVisible="{Binding !IsExtracting}"
