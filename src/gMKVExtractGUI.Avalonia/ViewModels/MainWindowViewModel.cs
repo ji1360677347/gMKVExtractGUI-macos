@@ -236,8 +236,14 @@ public class MainWindowViewModel : INotifyPropertyChanged
     private string _uncheckedAudioTracksHeader = "全部音频轨道 (0/0)";
     public string UncheckedAudioTracksHeader { get => _uncheckedAudioTracksHeader; set => SetField(ref _uncheckedAudioTracksHeader, value); }
 
+    public ObservableCollection<MenuItem> CheckAudioTrackMenuItems { get; } = new();
+    public ObservableCollection<MenuItem> UncheckAudioTrackMenuItems { get; } = new();
+
     private string _uncheckedSubtitleTracksHeader = "全部字幕轨道 (0/0)";
     public string UncheckedSubtitleTracksHeader { get => _uncheckedSubtitleTracksHeader; set => SetField(ref _uncheckedSubtitleTracksHeader, value); }
+
+    public ObservableCollection<MenuItem> CheckSubtitleTrackMenuItems { get; } = new();
+    public ObservableCollection<MenuItem> UncheckSubtitleTrackMenuItems { get; } = new();
 
     private string _uncheckedChapterTracksHeader = "全部章节轨道 (0/0)";
     public string UncheckedChapterTracksHeader { get => _uncheckedChapterTracksHeader; set => SetField(ref _uncheckedChapterTracksHeader, value); }
@@ -740,6 +746,80 @@ public class MainWindowViewModel : INotifyPropertyChanged
         UncheckedSubtitleTracksHeader = $"全部字幕轨道 ({subtitle.Total - subtitle.Checked}/{subtitle.Total})";
         UncheckedChapterTracksHeader = $"全部章节轨道 ({chapter.Total - chapter.Checked}/{chapter.Total})";
         UncheckedAttachmentTracksHeader = $"全部附件轨道 ({attachment.Total - attachment.Checked}/{attachment.Total})";
+
+        RefreshTrackLanguageMenus(
+            allTracks,
+            IsAudioTrack,
+            CheckAudioTrackMenuItems,
+            UncheckAudioTrackMenuItems,
+            AllAudioTracksHeader,
+            UncheckedAudioTracksHeader,
+            CheckAudioTracksCommand,
+            UncheckAudioTracksCommand);
+        RefreshTrackLanguageMenus(
+            allTracks,
+            IsSubtitleTrack,
+            CheckSubtitleTrackMenuItems,
+            UncheckSubtitleTrackMenuItems,
+            AllSubtitleTracksHeader,
+            UncheckedSubtitleTracksHeader,
+            CheckSubtitleTracksCommand,
+            UncheckSubtitleTracksCommand);
+    }
+
+    private void RefreshTrackLanguageMenus(
+        IReadOnlyCollection<TrackItem> allTracks,
+        Func<TrackItem, bool> trackPredicate,
+        ObservableCollection<MenuItem> checkItems,
+        ObservableCollection<MenuItem> uncheckItems,
+        string checkAllHeader,
+        string uncheckAllHeader,
+        ICommand checkAllCommand,
+        ICommand uncheckAllCommand)
+    {
+        var languageGroups = allTracks
+            .Where(trackPredicate)
+            .GroupBy(GetTrackLanguage, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(g =>
+            {
+                var tracks = g.ToList();
+                return new
+                {
+                    Language = g.Key,
+                    Checked = tracks.Count(t => t.IsSelected),
+                    Total = tracks.Count,
+                };
+            })
+            .ToList();
+
+        checkItems.Clear();
+        uncheckItems.Clear();
+        checkItems.Add(new MenuItem { Header = checkAllHeader, Command = checkAllCommand });
+        uncheckItems.Add(new MenuItem { Header = uncheckAllHeader, Command = uncheckAllCommand });
+
+        foreach (var group in languageGroups)
+        {
+            var language = group.Language;
+            checkItems.Add(new MenuItem
+            {
+                Header = $"{FormatLanguageLabel(language)} ({group.Checked}/{group.Total})",
+                Command = new RelayCommand(() => SetTrackLanguageChecked(trackPredicate, language, true)),
+            });
+            uncheckItems.Add(new MenuItem
+            {
+                Header = $"{FormatLanguageLabel(language)} ({group.Total - group.Checked}/{group.Total})",
+                Command = new RelayCommand(() => SetTrackLanguageChecked(trackPredicate, language, false)),
+            });
+        }
+    }
+
+    private void SetTrackLanguageChecked(Func<TrackItem, bool> trackPredicate, string language, bool isSelected)
+    {
+        SetTracksChecked(track =>
+            trackPredicate(track) &&
+            string.Equals(GetTrackLanguage(track), language, StringComparison.OrdinalIgnoreCase),
+            isSelected);
     }
 
     private static (int Checked, int Total) CountTracks(IEnumerable<TrackItem> tracks, Func<TrackItem, bool> predicate)
@@ -756,6 +836,17 @@ public class MainWindowViewModel : INotifyPropertyChanged
 
     private static bool IsSubtitleTrack(TrackItem item)
         => item.Segment is gMKVTrack { TrackType: MkvTrackType.subtitles };
+
+    private static string GetTrackLanguage(TrackItem item)
+        => item.Segment is gMKVTrack track ? NormalizeLanguage(track.Language) : "und";
+
+    private static string NormalizeLanguage(string? language)
+        => string.IsNullOrWhiteSpace(language) ? "und" : language.Trim();
+
+    private static string FormatLanguageLabel(string language)
+        => string.Equals(language, "und", StringComparison.OrdinalIgnoreCase)
+            ? "und（未指定）"
+            : language;
 
     private static bool IsChapterTrack(TrackItem item)
         => item.Segment is gMKVChapter;

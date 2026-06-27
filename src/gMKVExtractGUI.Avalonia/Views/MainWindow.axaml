@@ -10,6 +10,7 @@
         Width="1100" Height="780"
         MinWidth="900" MinHeight="620"
         Background="Transparent"
+        DragDrop.AllowDrop="True"
         TransparencyLevelHint="AcrylicBlur,Mica,Blur,Transparent"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="PreferSystemChrome"
@@ -70,7 +71,7 @@
       </Border>
 
       <!-- 输入文件树：官方式单区布局，轨道始终展开 -->
-      <Border Grid.Row="2" Classes="glass">
+      <Border Grid.Row="2" Classes="glass" DragDrop.AllowDrop="True">
           <Border.ContextMenu>
             <ContextMenu>
               <MenuItem Header="{Binding CheckAllTracksHeader}" Command="{Binding CheckAllTracksCommand}" />
@@ -78,12 +79,10 @@
               <MenuItem Header="{Binding CheckVideoTracksHeader}">
                 <MenuItem Header="{Binding AllVideoTracksHeader}" Command="{Binding CheckVideoTracksCommand}" />
               </MenuItem>
-              <MenuItem Header="{Binding CheckAudioTracksHeader}">
-                <MenuItem Header="{Binding AllAudioTracksHeader}" Command="{Binding CheckAudioTracksCommand}" />
-              </MenuItem>
-              <MenuItem Header="{Binding CheckSubtitleTracksHeader}">
-                <MenuItem Header="{Binding AllSubtitleTracksHeader}" Command="{Binding CheckSubtitleTracksCommand}" />
-              </MenuItem>
+              <MenuItem Header="{Binding CheckAudioTracksHeader}"
+                        ItemsSource="{Binding CheckAudioTrackMenuItems}" />
+              <MenuItem Header="{Binding CheckSubtitleTracksHeader}"
+                        ItemsSource="{Binding CheckSubtitleTrackMenuItems}" />
               <MenuItem Header="{Binding CheckChapterTracksHeader}">
                 <MenuItem Header="{Binding AllChapterTracksHeader}" Command="{Binding CheckChapterTracksCommand}" />
               </MenuItem>
@@ -96,12 +95,10 @@
               <MenuItem Header="{Binding UncheckVideoTracksHeader}">
                 <MenuItem Header="{Binding UncheckedVideoTracksHeader}" Command="{Binding UncheckVideoTracksCommand}" />
               </MenuItem>
-              <MenuItem Header="{Binding UncheckAudioTracksHeader}">
-                <MenuItem Header="{Binding UncheckedAudioTracksHeader}" Command="{Binding UncheckAudioTracksCommand}" />
-              </MenuItem>
-              <MenuItem Header="{Binding UncheckSubtitleTracksHeader}">
-                <MenuItem Header="{Binding UncheckedSubtitleTracksHeader}" Command="{Binding UncheckSubtitleTracksCommand}" />
-              </MenuItem>
+              <MenuItem Header="{Binding UncheckAudioTracksHeader}"
+                        ItemsSource="{Binding UncheckAudioTrackMenuItems}" />
+              <MenuItem Header="{Binding UncheckSubtitleTracksHeader}"
+                        ItemsSource="{Binding UncheckSubtitleTrackMenuItems}" />
               <MenuItem Header="{Binding UncheckChapterTracksHeader}">
                 <MenuItem Header="{Binding UncheckedChapterTracksHeader}" Command="{Binding UncheckChapterTracksCommand}" />
               </MenuItem>
@@ -135,6 +132,7 @@
                     Classes="drop-target"
                     Classes.active="{Binding IsDragOver}"
                     DragDrop.AllowDrop="True"
+                    Background="Transparent"
                     Padding="0">
               <Grid>
                 <StackPanel HorizontalAlignment="Center"
