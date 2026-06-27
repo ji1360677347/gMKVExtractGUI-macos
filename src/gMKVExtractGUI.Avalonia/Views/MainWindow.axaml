@@ -129,10 +129,10 @@
 
             <Border Grid.Row="2"
                     Name="DropZone"
-                    Classes="drop-target"
-                    Classes.active="{Binding IsDragOver}"
                     DragDrop.AllowDrop="True"
                     Background="Transparent"
+                    CornerRadius="{DynamicResource MacaronCardCornerRadius}"
+                    ClipToBounds="True"
                     Padding="0">
               <Grid>
                 <StackPanel HorizontalAlignment="Center"
@@ -156,6 +156,17 @@
                          Background="Transparent"
                          IsVisible="{Binding HasFiles}"
                          BorderThickness="0">
+                  <ListBox.Styles>
+                    <Style Selector="ListBoxItem">
+                      <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+                      <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+                      <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                  </ListBox.Styles>
                   <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="vm:InputFileItem">
                       <StackPanel Margin="4,4,4,6" Spacing="2">
@@ -203,6 +214,9 @@
                     </DataTemplate>
                   </ListBox.ItemTemplate>
                 </ListBox>
+                <Border Classes="drop-target"
+                        Classes.active="{Binding IsDragOver}"
+                        IsHitTestVisible="False" />
               </Grid>
             </Border>
 
